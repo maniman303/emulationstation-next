@@ -15,6 +15,7 @@ PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig \
 cmake -S . -B build/rgdsplus-aarch64 -G Ninja \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/aarch64-multiarch-linux-gnu.cmake \
+    -DROCKNIX=ON \
     -DFREETYPE_INCLUDE_DIR_ft2build=/usr/include/freetype2 \
     -DFREETYPE_INCLUDE_DIR_freetype2=/usr/include/freetype2 \
     -DFREETYPE_LIBRARY_RELEASE=/usr/lib/aarch64-linux-gnu/libfreetype.so \
