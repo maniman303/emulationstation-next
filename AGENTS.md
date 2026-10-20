@@ -62,19 +62,22 @@ supervised and user configuration already exists on device.
    gamelists, systems, settings, saves, or other user data. Do not launch the
    deployed executable directly; use the normal device launcher and service so it
    receives the normal environment, arguments, and configuration.
-3. Always deploy to the predictable final name
-   `/storage/.config/emulationstation/bin/emulationstation`. Transfer to a
-   temporary file in that directory, compare SHA-256 with the local artifact, set
-   executable permission, and atomically rename it to the final path. The mount
-   helper stops and restarts the frontend around mount changes. If the destination
-   contains an unrelated or unverified user binary,
-   preserve it and stop rather than overwrite it. Never remove a successfully
-   transferred and verified binary; remove only incomplete temporary files from
-   the current session.
+3. Stage every deployment as
+   `/storage/.config/emulationstation/bin/emulationstation.new`. Compare its
+   SHA-256 with the local artifact before running the mount helper. If it does
+   not match, remove only that incomplete staged file and stop. If the current
+   `emulationstation` is an unrelated or unverified user binary, preserve it and
+   stop rather than replace it. The helper promotes a verified `.new` file after
+   stopping EmulationStation and unmounting stale bind mounts: it removes the
+   previous `.old`, renames the current binary to `.old` when present, renames
+   `.new` to `emulationstation`, and applies executable permission. This keeps
+   the immediately previous binary as a rollback copy. Do not remove the newly
+   promoted binary after a successful deployment.
 4. Run `/storage/.config/autostart/mount_emulationstation.sh`. Its tracked source
-   is `scripts/mount-emulationstation.sh`. It bind-mounts the deployed binary over
-   `/usr/bin/emulationstation`, clearing stale bind mounts with normal `umount`
-   first. Every invocation with a deployed binary checks whether
+   is `scripts/mount-emulationstation.sh`. It stops the frontend, clears stale
+   bind mounts with normal `umount`, promotes `emulationstation.new` when present,
+   then bind-mounts the deployed binary over `/usr/bin/emulationstation`. Every
+   invocation with a deployed or staged binary checks whether
    `essway.service` is active; if so, it stops the service and starts it again
    from an exit trap, including when unmounting or mounting fails. Do not use
    lazy/forced unmount. Before unmounting, it checks every 0.5 seconds for up to

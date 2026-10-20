@@ -2,6 +2,8 @@
 set -eu
 
 source_bin="/storage/.config/emulationstation/bin/emulationstation"
+new_bin="${source_bin}.new"
+old_bin="${source_bin}.old"
 target_bin="/usr/bin/emulationstation"
 frontend_service="essway.service"
 
@@ -20,8 +22,7 @@ frontend_pids()
     done
 }
 
-[ -f "$source_bin" ] || exit 0
-chmod +x "$source_bin"
+[ -f "$source_bin" ] || [ -f "$new_bin" ] || exit 0
 
 service_was_running=false
 if systemctl is-active --quiet "$frontend_service"; then
@@ -84,5 +85,31 @@ if [ ! -f "$target_bin" ]; then
     exit 1
 fi
 
+if [ -f "$new_bin" ]; then
+    if [ -e "$source_bin" ] && [ ! -f "$source_bin" ]; then
+        printf 'Existing deployment is not a regular file: %s\n' "$source_bin" >&2
+        exit 1
+    fi
+
+    rm -f "$old_bin"
+    if [ -f "$source_bin" ]; then
+        mv "$source_bin" "$old_bin"
+    fi
+
+    if ! mv "$new_bin" "$source_bin"; then
+        if [ ! -e "$source_bin" ] && [ -f "$old_bin" ]; then
+            mv "$old_bin" "$source_bin" || true
+        fi
+        printf 'Failed to promote staged executable: %s\n' "$new_bin" >&2
+        exit 1
+    fi
+fi
+
+if [ ! -f "$source_bin" ]; then
+    printf 'Deployed executable missing: %s\n' "$source_bin" >&2
+    exit 1
+fi
+
+chmod +x "$source_bin"
 mount --bind "$source_bin" "$target_bin"
 printf 'Mounted %s at %s\n' "$source_bin" "$target_bin"
