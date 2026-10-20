@@ -1,0 +1,3 @@
+# Copy this file to deploy-rgdsplus.conf and set the device IP and password.
+DEVICE_IP="192.0.2.1"
+DEVICE_PASSWORD="replace-me"

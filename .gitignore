@@ -60,3 +60,6 @@ CPackSourceConfig.cmake
 # backup files
 *.orig
 *.rej
+
+# RG DS Plus deployment settings and state
+/scripts/deploy-rgdsplus.conf
