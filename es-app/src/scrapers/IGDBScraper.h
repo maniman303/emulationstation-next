@@ -32,15 +32,16 @@ private:
 class IGDBRequest : public ScraperHttpRequest
 {
 public:
-	// ctor for a GetGameList request
-	IGDBRequest(std::queue<std::unique_ptr<ScraperRequest>>& requestsWrite, std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade, bool isManualScrape)
-		: ScraperHttpRequest(resultsWrite, url, options), mRequestQueue(&requestsWrite)
+	// Search request with one fallback after an empty response.
+	IGDBRequest(std::queue<std::unique_ptr<ScraperRequest>>& requestsWrite, std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade, bool isManualScrape, const std::string& fallbackQuery)
+		: ScraperHttpRequest(resultsWrite, url, options), mRequestQueue(&requestsWrite), mFallbackOptions(*options)
 	{
 		mIsManualScrape = isManualScrape;
 		mIsArcade = isArcade;
+		mFallbackOptions.dataToPost = fallbackQuery;
 	}
 
-	// ctor for a GetGame request
+	// Search request without a fallback.
 	IGDBRequest(std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade, bool isManualScrape)
 		: ScraperHttpRequest(resultsWrite, url, options), mRequestQueue(nullptr)
 	{
@@ -57,6 +58,7 @@ protected:
 	bool mIsManualScrape;
 	bool mIsArcade;
 	std::queue<std::unique_ptr<ScraperRequest>>* mRequestQueue;
+	HttpReqOptions mFallbackOptions;
 };
 
 #endif // ES_APP_SCRAPERS_IGDBDB_SCRAPER_H

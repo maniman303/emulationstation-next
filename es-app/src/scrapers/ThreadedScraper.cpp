@@ -14,7 +14,7 @@ ThreadedScraper* ThreadedScraper::mInstance = nullptr;
 bool ThreadedScraper::mPaused = false;
 
 ThreadedScraper::ThreadedScraper(Window* window, const std::queue<ScraperSearchParams>& searches, int threadCount)
-	: mSearchQueue(searches), mWindow(window)
+	: mWindow(window), mWndNotification(nullptr), mSearchQueue(searches)
 {
 	mExitCode = ASYNC_IN_PROGRESS;
 	mTotal = (int) mSearchQueue.size();
@@ -61,7 +61,15 @@ void ThreadedScraper::ProcessNextGame(ScraperThread* thread)
 
 ThreadedScraper::~ThreadedScraper()
 {
-	mWndNotification = nullptr;
+	if (mWndNotification != nullptr)
+	{
+		if (mExitCode == ASYNC_ERROR)
+			mWndNotification->closeAfter(6000);
+		else
+			mWndNotification->close();
+
+		mWndNotification = nullptr;
+	}
 
 	for (auto scraperThread : mScraperThreads)
 		delete scraperThread;
@@ -241,7 +249,6 @@ void ThreadedScraper::updateUI()
 		mWndNotification->updateTitle(GUIICON + _("SCRAPE FAILED"));
 		mWndNotification->updateText(errorMessage);
 		mWndNotification->updatePercent(-1);
-		mWndNotification->closeAfter(6000);
 		return;
 	}
 

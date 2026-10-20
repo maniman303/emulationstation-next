@@ -1,6 +1,7 @@
 #include "scrapers/IGDBScraper.h"
 #include <exception>
 #include <map>
+#include <regex>
 #include "FileData.h"
 #include "Log.h"
 #include "PlatformId.h"
@@ -180,9 +181,18 @@ void IGDBScraper::generateRequests(const ScraperSearchParams& params, std::queue
 	if (cleanName.empty())
 		cleanName = Utils::String::removeParenthesis(Utils::FileSystem::getStem(params.game->getPath()));
 
-	std::string data = "fields id, name, platforms.name, genres.name, game_modes.name, multiplayer_modes.offlinemax, release_dates.date, release_dates.region, release_dates.platform, cover.*, screenshots.*, artworks.*, url, summary, aggregated_rating, involved_companies.company.name, involved_companies.developer, involved_companies.publisher ;";
-	data += " search \"" + cleanName + "\";" +
-	data += " limit 10;";
+	const std::string fields = "fields id, name, platforms.name, genres.name, game_modes.name, multiplayer_modes.offlinemax, release_dates.date, release_dates.region, release_dates.platform, cover.*, screenshots.*, artworks.*, url, summary, aggregated_rating, involved_companies.company.name, involved_companies.developer, involved_companies.publisher ;";
+	const std::string data = fields + " search \"" + cleanName + "\"; limit 10;";
+
+	std::string fallbackData;
+	if (params.nameOverride.empty())
+	{
+		// Numbered ROM sets prefix titles with a catalogue number, e.g. "1633 - ".
+		static const std::regex cataloguePrefix(R"(^[0-9]+\s+-\s+)");
+		const std::string fallbackName = Utils::String::trim(std::regex_replace(cleanName, cataloguePrefix, ""));
+		if (!fallbackName.empty() && fallbackName != cleanName)
+			fallbackData = fields + " search \"" + fallbackName + "\"; limit 10;";
+	}
 
 	std::string url = "https://api.igdb.com/v4/games";
 
@@ -191,6 +201,16 @@ void IGDBScraper::generateRequests(const ScraperSearchParams& params, std::queue
 	tokenAuth.customHeaders.push_back("Authorization: Bearer " + mToken);
 	tokenAuth.customHeaders.push_back("ContentType: text/plain");
 	tokenAuth.customHeaders.push_back("Accept: application/json");
+
+	auto queueRequest = [&](const std::string& platformFilter)
+	{
+		HttpReqOptions options = tokenAuth;
+		options.dataToPost = data + platformFilter;
+		if (!fallbackData.empty())
+			requests.push(std::unique_ptr<ScraperRequest>(new IGDBRequest(requests, results, url, &options, params.system->hasPlatformId(PlatformIds::ARCADE), params.isManualScrape, fallbackData + platformFilter)));
+		else
+			requests.push(std::unique_ptr<ScraperRequest>(new IGDBRequest(results, url, &options, params.system->hasPlatformId(PlatformIds::ARCADE), params.isManualScrape)));
+	};
 
 	auto& platforms = params.system->getPlatformIds();
 	if (!platforms.empty())
@@ -201,21 +221,13 @@ void IGDBScraper::generateRequests(const ScraperSearchParams& params, std::queue
 			if (it != igdb_platformids.cend())
 			{
 				for (auto plaformId : Utils::String::split(it->second, ',', true))
-				{
-					HttpReqOptions options = tokenAuth;
-					options.dataToPost = data + " where release_dates.platform = " + plaformId + ";";
-					requests.push(std::unique_ptr<ScraperRequest>(new IGDBRequest(results, url, &options, params.system->hasPlatformId(PlatformIds::ARCADE), params.isManualScrape)));
-				}
+					queueRequest(" where release_dates.platform = " + plaformId + ";");
 			}
 		}
 	}
 
 	if (requests.size() == 0)
-	{
-		HttpReqOptions options = tokenAuth;
-		options.dataToPost = data;
-		requests.push(std::unique_ptr<ScraperRequest>(new IGDBRequest(results, url, &options, params.system->hasPlatformId(PlatformIds::ARCADE), params.isManualScrape)));
-	}	
+		queueRequest("");
 }
 
 bool IGDBScraper::isSupportedPlatform(SystemData* system)
@@ -324,11 +336,22 @@ bool IGDBRequest::process(const std::string& response, std::vector<ScraperSearch
 		return false;
 	}
 
-	if (!doc.IsArray() || !doc.Size())
+	if (!doc.IsArray())
 	{
 		std::string warn = "IGDBRequest - Response is not valid.\n";
 		LOG(LogWarning) << warn;
 		return false;
+	}
+
+	if (doc.Empty())
+	{
+		if (mRequestQueue != nullptr && !mFallbackOptions.dataToPost.empty())
+		{
+			LOG(LogDebug) << "IGDB: no matches; retrying without the ROM catalogue number";
+			mRequestQueue->push(std::unique_ptr<ScraperRequest>(new IGDBRequest(results, mUrl, &mFallbackOptions, mIsArcade, mIsManualScrape)));
+			mFallbackOptions.dataToPost.clear();
+		}
+		return true;
 	}
 
 	for (int i = 0; i < (int)doc.Size(); ++i)
