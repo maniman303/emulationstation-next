@@ -1582,6 +1582,9 @@ msgstr "客户端ID"
 msgid "CLIENT SECRET"
 msgstr "客户端密钥"
 
+msgid "API KEY"
+msgstr "API密钥"
+
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
 "MAY BE FOR DIFFERENT SYSTEMS!\n"

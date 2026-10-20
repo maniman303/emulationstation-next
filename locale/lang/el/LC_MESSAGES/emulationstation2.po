@@ -1586,6 +1586,9 @@ msgstr ""
 msgid "CLIENT SECRET"
 msgstr ""
 
+msgid "API KEY"
+msgstr "ΚΛΕΙΔΙ API"
+
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
 "MAY BE FOR DIFFERENT SYSTEMS!\n"

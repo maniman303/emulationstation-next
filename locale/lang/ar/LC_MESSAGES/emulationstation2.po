@@ -1639,6 +1639,9 @@ msgstr "معرف العميل"
 msgid "CLIENT SECRET"
 msgstr "كلمة سر العميل"
 
+msgid "API KEY"
+msgstr "مفتاح API"
+
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
 "MAY BE FOR DIFFERENT SYSTEMS!\n"

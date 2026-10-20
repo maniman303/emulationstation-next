@@ -1592,6 +1592,9 @@ msgstr "クライアントID"
 msgid "CLIENT SECRET"
 msgstr "隠しクライアント"
 
+msgid "API KEY"
+msgstr "APIキー"
+
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
 "MAY BE FOR DIFFERENT SYSTEMS!\n"

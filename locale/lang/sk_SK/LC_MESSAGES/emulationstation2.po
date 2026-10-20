@@ -1596,6 +1596,9 @@ msgstr "ID klienta"
 msgid "CLIENT SECRET"
 msgstr "Heslo klienta"
 
+msgid "API KEY"
+msgstr "KĽÚČ API"
+
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
 "MAY BE FOR DIFFERENT SYSTEMS!\n"

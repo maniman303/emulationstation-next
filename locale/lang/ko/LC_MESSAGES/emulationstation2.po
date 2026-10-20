@@ -1588,6 +1588,9 @@ msgstr "클라이언트 ID"
 msgid "CLIENT SECRET"
 msgstr "클라이언트 비밀ㅋ"
 
+msgid "API KEY"
+msgstr "API 키"
+
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
 "MAY BE FOR DIFFERENT SYSTEMS!\n"
