@@ -32,18 +32,9 @@ private:
 class IGDBRequest : public ScraperHttpRequest
 {
 public:
-	// Search request with one fallback after an empty response.
-	IGDBRequest(std::queue<std::unique_ptr<ScraperRequest>>& requestsWrite, std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade, bool isManualScrape, const std::string& fallbackQuery)
-		: ScraperHttpRequest(resultsWrite, url, options), mRequestQueue(&requestsWrite), mFallbackOptions(*options)
-	{
-		mIsManualScrape = isManualScrape;
-		mIsArcade = isArcade;
-		mFallbackOptions.dataToPost = fallbackQuery;
-	}
-
-	// Search request without a fallback.
-	IGDBRequest(std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade, bool isManualScrape)
-		: ScraperHttpRequest(resultsWrite, url, options), mRequestQueue(nullptr)
+	// Search request with an optional filename fallback and parent media lookup.
+	IGDBRequest(std::queue<std::unique_ptr<ScraperRequest>>& requestsWrite, std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade, bool isManualScrape, const std::string& fallbackQuery = "")
+		: ScraperHttpRequest(resultsWrite, url, options), mRequestQueue(requestsWrite), mRequestOptions(*options), mFallbackQuery(fallbackQuery)
 	{
 		mIsManualScrape = isManualScrape;
 		mIsArcade = isArcade;
@@ -53,12 +44,32 @@ public:
 
 protected:
 	bool process(const std::string& response, std::vector<ScraperSearchResult>& results) override;
-	bool isGameRequest() { return !mRequestQueue; }
 
 	bool mIsManualScrape;
 	bool mIsArcade;
-	std::queue<std::unique_ptr<ScraperRequest>>* mRequestQueue;
-	HttpReqOptions mFallbackOptions;
+	std::queue<std::unique_ptr<ScraperRequest>>& mRequestQueue;
+	HttpReqOptions mRequestOptions;
+	std::string mFallbackQuery;
+};
+
+class IGDBParentMediaRequest : public ScraperHttpRequest
+{
+public:
+	typedef std::map<unsigned int, std::vector<size_t>> ParentResults;
+
+	IGDBParentMediaRequest(std::vector<ScraperSearchResult>& results, const std::string& url, HttpReqOptions* options,
+		std::vector<ScraperSearchResult> pendingResults, ParentResults parentResults, bool isManualScrape);
+
+	void update() override;
+	bool retryOn249() override { return !mIsManualScrape; }
+
+protected:
+	bool process(const std::string& response, std::vector<ScraperSearchResult>& results) override;
+
+private:
+	std::vector<ScraperSearchResult> mPendingResults;
+	ParentResults mParentResults;
+	bool mIsManualScrape;
 };
 
 #endif // ES_APP_SCRAPERS_IGDBDB_SCRAPER_H
