@@ -4072,3 +4072,6 @@ msgstr[0] "%d giây trước"
 
 #~ msgid "model"
 #~ msgstr "Model"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Thông tin xác thực IGDB không hợp lệ."

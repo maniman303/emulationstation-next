@@ -4599,3 +4599,6 @@ msgstr[2] ""
 
 #~ msgid "STOP EDITING"
 #~ msgstr "ЗАВЕРШИТИ РЕДАГУВАННЯ"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Облікові дані IGDB недійсні."

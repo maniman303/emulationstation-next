@@ -4071,3 +4071,6 @@ msgstr[1] "hace %d segundos"
 
 #~ msgid "HAS MEDIAS"
 #~ msgstr "TIENE MEDIOS"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Las credenciales de IGDB no son válidas."

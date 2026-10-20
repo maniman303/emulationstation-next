@@ -4085,3 +4085,6 @@ msgstr[0] "%d detik lalu"
 
 #~ msgid "HAS MEDIAS"
 #~ msgstr "MEMILIKI MEDIA"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Kredensial IGDB tidak valid."

@@ -169,7 +169,7 @@ void IGDBScraper::generateRequests(const ScraperSearchParams& params, std::queue
 	if (!ensureToken())
 	{
 		if (!params.isManualScrape)
-			throw std::runtime_error(_("INVALID CREDENTIALS"));
+			throw std::runtime_error(_("INVALID IGDB CREDENTIALS"));
 
 		return;
 	}

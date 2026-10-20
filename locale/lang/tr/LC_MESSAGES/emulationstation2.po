@@ -4084,3 +4084,6 @@ msgstr[1] "%d saniye önce"
 
 #~ msgid "ACCOUNT"
 #~ msgstr "HESAP"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDB kimlik bilgileri geçersiz."

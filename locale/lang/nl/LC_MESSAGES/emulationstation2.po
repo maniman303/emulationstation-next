@@ -4052,3 +4052,6 @@ msgstr[1] "%d secondes geleden"
 
 #~ msgid "FANART"
 #~ msgstr "FANART"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "De IGDB-inloggegevens zijn ongeldig."

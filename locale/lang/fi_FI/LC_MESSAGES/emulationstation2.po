@@ -4038,3 +4038,6 @@ msgstr[1] "%d sekunttia sitten"
 
 #~ msgid "SWITCH A & B BUTTONS IN EMULATIONSTATION"
 #~ msgstr "VAIHDA A JA B NÄPPÄIMIÄ EMULATIONSTATIONISSA"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDB-tunnistetiedot eivät kelpaa."

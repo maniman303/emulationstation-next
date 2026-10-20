@@ -23,6 +23,7 @@ public:
 	void updateTitle(const std::string text);
 	void updateText(const std::string text, const std::string action = "");
 	void updatePercent(int percent);
+	void closeAfter(int duration);
 
 	float getFading() { return mFadeOut; }
 	bool isClosing() { return mClosing; };
@@ -52,6 +53,7 @@ private:
 	float				mFadeOut;
 	int                 mFadeTime;
 	int                 mFadeOutOpacity;
+	int                 mCloseAfter;
 
 	Vector2f			mFullSize;
 };

@@ -4445,3 +4445,6 @@ msgstr[2] "%d sekund temu"
 
 #~ msgid "LISTENING NOW"
 #~ msgstr "TERAZ SŁUCHA"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Dane uwierzytelniające IGDB są nieprawidłowe."

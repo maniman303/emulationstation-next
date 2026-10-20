@@ -4553,3 +4553,6 @@ msgstr[5] "%d eiliadau yn ôl"
 
 #~ msgid "AN ERROR HAS OCCURED"
 #~ msgstr "MAE GWALL WEDI DIGWYDD"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Mae manylion mewngofnodi IGDB yn annilys."

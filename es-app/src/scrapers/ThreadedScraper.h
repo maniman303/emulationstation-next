@@ -64,9 +64,11 @@ private:
 
 	void Process();
 	void ProcessNextGame(ScraperThread* thread);
+	void processSetupError(const std::string& error);
 
 	Window* mWindow;
 	AsyncNotificationComponent* mWndNotification;
+	std::string mExitMessage;
 	
 	std::string		mCurrentGame;
 

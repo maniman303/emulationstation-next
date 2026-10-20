@@ -4087,3 +4087,6 @@ msgstr[1] "%d segundos atrás"
 
 #~ msgid "RESTRICT HOTKEYS TO EXIT"
 #~ msgstr "RESTRINGIR ATALHOS PARA SAIR"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "As credenciais do IGDB são inválidas."

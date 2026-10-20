@@ -4084,3 +4084,6 @@ msgstr[1] "%d sekunder sedan"
 
 #~ msgid "ZFAST"
 #~ msgstr "ZFAST"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Inloggningsuppgifterna för IGDB är ogiltiga."

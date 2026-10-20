@@ -4057,3 +4057,6 @@ msgid "%d second ago"
 msgid_plural "%d seconds ago"
 msgstr[0] "%d Sekunde her"
 msgstr[1] "%d Sekunden her"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Die IGDB-Zugangsdaten sind ungültig."

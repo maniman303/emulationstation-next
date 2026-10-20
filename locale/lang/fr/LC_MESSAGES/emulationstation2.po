@@ -4051,3 +4051,6 @@ msgstr[1] "il y a %d secondes"
 
 #~ msgid "Building image cache"
 #~ msgstr "Génération du cache d’images"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Les identifiants IGDB sont invalides."

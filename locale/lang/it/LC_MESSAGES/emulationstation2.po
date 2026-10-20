@@ -5291,3 +5291,6 @@ msgstr[1] "%d secondi fa"
 
 #~ msgid "UPDATE FAILED, THE SYSTEM WILL NOW REBOOT"
 #~ msgstr "AGGIORNAMENTO FALLITO, IL SISTEMA VERRÀ RIAVVIATO"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Le credenziali IGDB non sono valide."

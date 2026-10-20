@@ -4043,3 +4043,6 @@ msgstr[0] "%d 秒前"
 #~ msgstr ""
 #~ "ゲーム リストが更新されると、新しいドライブ コンテンツが利用できるようにな"
 #~ "ります…"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDBの認証情報が無効です。"

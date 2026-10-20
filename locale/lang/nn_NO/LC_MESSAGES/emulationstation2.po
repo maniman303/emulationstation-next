@@ -4258,3 +4258,6 @@ msgstr[1] ""
 
 #~ msgid "UPDATE FAILED, THE SYSTEM WILL NOW REBOOT"
 #~ msgstr "OPPDATERING FEILET, SYSTEMET VIL STARTES PÅ NYTT"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDB-påloggingsinformasjonen er ugyldig."

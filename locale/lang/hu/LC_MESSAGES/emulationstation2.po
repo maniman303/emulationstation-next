@@ -4140,3 +4140,6 @@ msgstr[1] "%d másodperce"
 
 #~ msgid "HAS MEDIAS"
 #~ msgstr "RENDELKEZIK MÉDIÁVAL"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Az IGDB hitelesítési adatai érvénytelenek."

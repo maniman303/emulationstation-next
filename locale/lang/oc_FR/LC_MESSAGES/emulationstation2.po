@@ -4209,3 +4209,6 @@ msgstr[1] "Fa %d segondas"
 
 #~ msgid "UNINSTALL BEZELS"
 #~ msgstr "DESINSTALLAR BEZELS"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Las credencialas d’IGDB son pas validas."

@@ -7365,3 +7365,6 @@ msgstr[0] "%d 秒前"
 #~ msgctxt "game_options"
 #~ msgid "Joystick"
 #~ msgstr "摇杆"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDB 凭据无效。"

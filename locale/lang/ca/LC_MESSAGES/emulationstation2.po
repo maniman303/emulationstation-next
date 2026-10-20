@@ -4093,3 +4093,6 @@ msgstr[1] "fa %d segons"
 
 #~ msgid "HAS MEDIAS"
 #~ msgstr "TÉ CONTINGUTS"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Les credencials d’IGDB no són vàlides."

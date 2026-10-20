@@ -4435,3 +4435,6 @@ msgstr[1] "duela %d segundu"
 
 #~ msgid "UPDATE FAILED, THE SYSTEM WILL NOW REBOOT"
 #~ msgstr "EGUNERAKETAK HUTS EGIN DU. SISTEMA BERRABIARAZIKO DA ORAIN"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDBren kredentzialak baliogabeak dira."

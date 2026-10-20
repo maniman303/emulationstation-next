@@ -4023,3 +4023,6 @@ msgstr[0] "%d 幾秒前"
 
 #~ msgid "HAS MEDIAS"
 #~ msgstr "含有媒體"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDB 憑證無效。"

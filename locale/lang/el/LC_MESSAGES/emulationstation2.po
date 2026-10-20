@@ -4503,3 +4503,6 @@ msgstr[1] "%d δευτερολεπτα πριν"
 
 #~ msgid "AN UPDATE IS AVAILABLE FOR BATOCERA.LINUX"
 #~ msgstr "ΜΙΑ ΑΝΑΒΑΘΜΙΣΗ ΕΙΝΑΙ ΔΙΑΘΕΣΙΜΗ ΓΙΑ ΤΟ BATOCERA.LINUX"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Τα διαπιστευτήρια IGDB δεν είναι έγκυρα."

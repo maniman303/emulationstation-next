@@ -3968,3 +3968,6 @@ msgid "%d second ago"
 msgid_plural "%d seconds ago"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr ""

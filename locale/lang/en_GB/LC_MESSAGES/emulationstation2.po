@@ -4062,3 +4062,6 @@ msgstr[1] "%d seconds ago"
 
 #~ msgid "GROUP UNTHEMED CUSTOM COLLECTIONS"
 #~ msgstr "GROUP UNTHEMED CUSTOM COLLECTIONS"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDB credentials are invalid."

@@ -4488,3 +4488,6 @@ msgstr[2] "%d před sekundami"
 
 #~ msgid "JUMP ON B"
 #~ msgstr "TLAČÍTKO B = NAHORU"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Přihlašovací údaje IGDB jsou neplatné."

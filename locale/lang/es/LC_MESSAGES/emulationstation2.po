@@ -4137,3 +4137,6 @@ msgstr[1] "hace %d segundos"
 #~ msgstr ""
 #~ "PARA ESCRIBIR EL COMANDO DE INICIO PARA '%s' PRESIONE EL BOTÓN DE "
 #~ "ESCRITURA Y LUEGO COLOQUE UNA ETIQUETA EN EL LECTOR NFC"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Las credenciales de IGDB no son válidas."

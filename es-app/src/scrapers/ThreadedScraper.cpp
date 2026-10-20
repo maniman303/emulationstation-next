@@ -6,6 +6,7 @@
 #include "guis/GuiMsgBox.h"
 #include "Gamelist.h"
 #include "Log.h"
+#include <exception>
 
 #define GUIICON _U("\uF03E ")
 
@@ -46,14 +47,20 @@ void ThreadedScraper::ProcessNextGame(ScraperThread* thread)
 
 	LOG(LogInfo) << "[Thread " << thread->mThreadId << "] ProcessNextGame : " << mCurrentGame;
 
-	thread->run(item);
+	try
+	{
+		thread->run(item);
+	}
+	catch (const std::exception& e)
+	{
+		processSetupError(e.what());
+	}
 
 	updateUI();
 }
 
 ThreadedScraper::~ThreadedScraper()
 {
-	mWndNotification->close();
 	mWndNotification = nullptr;
 
 	for (auto scraperThread : mScraperThreads)
@@ -140,9 +147,16 @@ int ScraperThread::updateState()
 	return mStatus;
 }
 
+void ThreadedScraper::processSetupError(const std::string& error)
+{
+	LOG(LogError) << "Scraper request setup failed: " << error;
+	mExitCode = ASYNC_ERROR;
+	mExitMessage = error;
+}
+
 void ThreadedScraper::processError(int status, const std::string statusString)
 {
-	if (status == HttpReq::REQ_430_TOOMANYSCRAPS || status == HttpReq::REQ_430_TOOMANYFAILURES || 
+	if (status == HttpReq::REQ_430_TOOMANYSCRAPS || status == HttpReq::REQ_430_TOOMANYFAILURES ||
 		status == HttpReq::REQ_426_BLACKLISTED || status == HttpReq::REQ_FILESTREAM_ERROR || status == HttpReq::REQ_426_SERVERMAINTENANCE ||
 		status == HttpReq::REQ_403_BADLOGIN || status == HttpReq::REQ_401_FORBIDDEN)
 	{
@@ -208,7 +222,7 @@ void ThreadedScraper::run()
 			}
 		}
 	}
-	
+
 	if (mExitCode == ASYNC_DONE)
 		mWindow->displayNotificationMessage(GUIICON + _("SCRAPING FINISHED") + std::string(". ") + _("UPDATE GAMELISTS TO APPLY CHANGES."));
 
@@ -218,6 +232,19 @@ void ThreadedScraper::run()
 
 void ThreadedScraper::updateUI()
 {
+	if (mWndNotification == nullptr)
+		return;
+
+	if (mExitCode == ASYNC_ERROR)
+	{
+		const std::string errorMessage = mExitMessage.empty() ? _("AN ERROR OCCURRED") : mExitMessage;
+		mWndNotification->updateTitle(GUIICON + _("SCRAPE FAILED"));
+		mWndNotification->updateText(errorMessage);
+		mWndNotification->updatePercent(-1);
+		mWndNotification->closeAfter(6000);
+		return;
+	}
+
 	int remaining = mTotal + 1 - mSearchQueue.size() - mScraperThreads.size();
 	if (remaining < 0)
 		remaining = 0;

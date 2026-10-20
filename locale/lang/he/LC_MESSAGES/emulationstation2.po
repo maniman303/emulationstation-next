@@ -4515,3 +4515,6 @@ msgstr[3] ""
 
 #~ msgid "REALLY SHUTDOWN WITHOUT SAVING METADATAS?"
 #~ msgstr "בטוח לכבות בלי לשמור METADATA"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "פרטי ההתחברות של IGDB אינם תקינים."

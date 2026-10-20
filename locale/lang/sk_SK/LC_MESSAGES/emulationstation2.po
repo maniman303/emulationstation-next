@@ -4152,3 +4152,6 @@ msgstr[2] "Pred %d sekundami"
 #~ "nemáte osobitné tlačidlo pre Hotkey, použite tlačidlo Select. Preskočte "
 #~ "všetky tlačidlá/páčky, ktoré nemáte držaním nejakého tlačidla. Stlačte "
 #~ "južné tlačidlo na potvrdenie, ak ste hotoví."
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Prihlasovacie údaje IGDB sú neplatné."

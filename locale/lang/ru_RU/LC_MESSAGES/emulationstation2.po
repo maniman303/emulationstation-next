@@ -5169,3 +5169,6 @@ msgstr[2] "%d секунд назад"
 
 #~ msgid "sortname"
 #~ msgstr "название для сортировки"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Учётные данные IGDB недействительны."

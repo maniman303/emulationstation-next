@@ -4110,3 +4110,6 @@ msgstr[5] "منذ %d ثانية"
 
 #~ msgid "RESTRICT HOTKEYS TO EXIT"
 #~ msgstr "تقييد زر الاختصار للخروج"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "بيانات اعتماد IGDB غير صالحة."
