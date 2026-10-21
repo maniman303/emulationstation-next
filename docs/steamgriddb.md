@@ -8,13 +8,15 @@ The scraper imports the title and these artwork fields:
 
 | Artwork | Gamelist field |
 | --- | --- |
-| Steam horizontal grid, 460×215 or 920×430 | `image` |
+| Steam horizontal grid, 460×215 or 920×430 (default) | `image` |
+| Steam vertical grid, 600×900 (optional) | `image` |
 | Steam square grid, 512×512 or 1024×1024 | `thumbnail` |
 | Logo | `marquee` |
 
-Each source can be disabled with **NONE** in scraper settings. Existing
-overwrite settings apply. Other metadata, including descriptions, manuals,
-release dates and ScreenScraper IDs, is preserved. There is no system filter.
+Image and logo source defaults are horizontal grid and logo. Each source can be
+disabled with **NONE** in scraper settings. Existing overwrite settings apply.
+Other metadata, including descriptions, manuals, release dates and ScreenScraper
+IDs, is preserved. There is no system filter.
 
 Filename searches remove release tags, normalize whitespace/separators and
 recognize catalogue prefixes. They try at most three distinct queries and
@@ -25,7 +27,8 @@ artwork for the best match; manual scraping returns at most five matches.
 
 Artwork is selected by **hearts**, independently of score and upvotes, across
 all result pages. Ties prefer resolution, then the lowest asset ID. Only static
-PNG/JPEG grids and PNG logos are requested. Successfully fetched API pages are
+PNG/JPEG grids and PNG logos are requested, with no logo dimension restriction.
+Successfully fetched API pages are
 cached in memory for ten minutes, with a maximum of 128 entries; changing the
 API key clears the cache. Disabled sources and existing artwork in a bulk
 scrape without overwrite avoid artwork lookups.

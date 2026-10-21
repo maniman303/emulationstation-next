@@ -164,15 +164,27 @@ void GuiScraperStart::loadSettingsPage()
 		auto addSource = [this](const std::string& label, const std::string& choice, const std::string& value, const std::string& setting)
 		{
 			auto list = std::make_shared<OptionListComponent<std::string>>(mWindow, label, false);
-			const bool enabled = !Settings::getInstance()->getString(setting).empty();
-			list->add(choice, value, enabled);
-			list->add(_("NONE"), "", !enabled);
+			const std::string selected = Settings::getInstance()->getString(setting);
+			list->add(choice, value, selected == value);
+			list->add(_("NONE"), "", selected.empty());
+			if (!list->hasSelection())
+				list->selectFirstItem();
 			addWithLabel(label, list);
 			addSaveFunc([list, setting] { Settings::getInstance()->setString(setting, list->getSelected()); });
 		};
-		addSource(_("IMAGE SOURCE"), _("STEAM HORIZONTAL GRID"), "sgdb-horizontal", "ScrapperImageSrc");
+
+		const std::string imageSource = Settings::getInstance()->getString("SteamGridDBImageSource");
+		auto imageSourceList = std::make_shared<OptionListComponent<std::string>>(mWindow, _("IMAGE SOURCE"), false);
+		imageSourceList->add(_("STEAM HORIZONTAL GRID"), "sgdb-horizontal", imageSource == "sgdb-horizontal");
+		imageSourceList->add(_("STEAM VERTICAL GRID"), "sgdb-vertical", imageSource == "sgdb-vertical");
+		imageSourceList->add(_("NONE"), "", imageSource.empty());
+		if (!imageSourceList->hasSelection())
+			imageSourceList->selectFirstItem();
+		addWithLabel(_("IMAGE SOURCE"), imageSourceList);
+		addSaveFunc([imageSourceList] { Settings::getInstance()->setString("SteamGridDBImageSource", imageSourceList->getSelected()); });
+
 		addSource(_("BOX SOURCE"), _("STEAM SQUARE GRID"), "sgdb-square", "ScrapperThumbSrc");
-		addSource(_("LOGO SOURCE"), _("Logo"), "sgdb-logo", "ScrapperLogoSrc");
+		addSource(_("LOGO SOURCE"), _("Logo"), "sgdb-logo", "SteamGridDBLogoSource");
 	}
 
 	std::string imageSourceName = Settings::getInstance()->getString("ScrapperImageSrc");

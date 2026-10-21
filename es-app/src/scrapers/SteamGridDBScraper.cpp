@@ -14,7 +14,7 @@ namespace SteamGridDB
 {
 
 static const MetaDataId mediaIds[] = { MetaDataId::Image, MetaDataId::Thumbnail, MetaDataId::Marquee };
-static const char* const mediaSettings[] = { "ScrapperImageSrc", "ScrapperThumbSrc", "ScrapperLogoSrc" };
+static const char* const mediaSettings[] = { "SteamGridDBImageSource", "ScrapperThumbSrc", "SteamGridDBLogoSource" };
 using Clock = std::chrono::steady_clock;
 
 static std::string apiKey()
@@ -88,8 +88,8 @@ class SteamGridDBRequest : public ScraperRequest
 {
 public:
 	SteamGridDBRequest(std::vector<ScraperSearchResult>& results, const std::string& credential,
-		const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled)
-		: ScraperRequest(results), mKey(credential), mClient(name, explicitName, manual, enabled)
+		const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage)
+		: ScraperRequest(results), mKey(credential), mClient(name, explicitName, manual, enabled, verticalImage)
 	{
 		const auto validation = SteamGridDB::checkKey(mKey);
 		if (validation != SteamGridDB::Error::None)
@@ -202,5 +202,6 @@ void SteamGridDBScraper::generateRequests(const ScraperSearchParams& params,
 	for (size_t i = 0; i < enabled.size(); ++i)
 		enabled[i] = !Settings::getInstance()->getString(SteamGridDB::mediaSettings[i]).empty() &&
 			(params.isManualScrape || overwrite || !Utils::FileSystem::exists(params.game->getMetadata(SteamGridDB::mediaIds[i])));
-	requests.push(std::unique_ptr<ScraperRequest>(new SteamGridDB::SteamGridDBRequest(results, credential, name, !params.nameOverride.empty(), params.isManualScrape, enabled)));
+	const bool verticalImage = Settings::getInstance()->getString("SteamGridDBImageSource") == "sgdb-vertical";
+	requests.push(std::unique_ptr<ScraperRequest>(new SteamGridDB::SteamGridDBRequest(results, credential, name, !params.nameOverride.empty(), params.isManualScrape, enabled, verticalImage)));
 }

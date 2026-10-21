@@ -62,14 +62,21 @@ static void tests()
 	client.receive(200, page(art(2, 8, -100, 920, 430), 2, 1));
 	check(client.body().find("512x512\",\"1024x1024") != std::string::npos, "square grid follows horizontal image");
 	client.receive(200, page(art(3, 7, 1000, 512, 512) + "," + art(4, 9, -20, 1024, 1024), 2));
-	check(client.body().find("\"asset_type\":\"logo\"") != std::string::npos && client.body().find("image/jpeg") == std::string::npos, "logo endpoint accepts only PNG mime");
+	check(client.body().find("\"asset_type\":\"logo\"") != std::string::npos && client.body().find("\"all\"") != std::string::npos && client.body().find("image/png") != std::string::npos && client.body().find("image/webp") == std::string::npos, "logo search accepts all dimensions and PNG only");
 	client.receive(200, page(art(5, 11, 0, 1500, 500), 1));
 	check(client.done() && client.error() == Error::None, "successful scrape completes");
 	check(client.results().size() == 1 && client.results()[0].name == "Metroid Fusion", "title returned");
 	check(client.results()[0].artwork[0].id == 2, "horizontal image with highest hearts across pages wins over score and upvotes");
 	check(client.results()[0].artwork[1].id == 4, "square thumbnail selected by hearts");
-	check(client.results()[0].artwork[2].id == 5, "logo selected by hearts");
+	check(client.results()[0].artwork[2].id == 5 && client.results()[0].artwork[2].extension == ".png", "PNG logo selected by hearts");
 	check(client.path().empty(), "completed client has no request");
+
+	Client vertical("Metroid Fusion", false, false, {{true, false, false}}, true);
+	vertical.receive(200, match);
+	check(vertical.body().find("\"600x900\"") != std::string::npos, "vertical image option requests Steam vertical grid");
+	vertical.receive(200, page(art(7, 8, 0, 600, 900), 1));
+	check(vertical.done() && vertical.results()[0].artwork[0].id == 7, "vertical grid fills image when selected");
+
 	Client encoded("A/B?C & D", true, false, {{false, false, false}});
 	check(encoded.path() == "/api/v2/search/autocomplete/A%2FB%3FC%20%26%20D", "reserved characters cannot change API path or query");
 	std::string suggestions;

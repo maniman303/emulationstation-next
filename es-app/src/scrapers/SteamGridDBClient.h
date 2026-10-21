@@ -37,7 +37,7 @@ Error checkKey(const std::string& trimmedKey);
 class Client
 {
 public:
-	Client(const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled);
+	Client(const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage = false);
 
 	std::string path() const;
 	std::string body() const; // Empty for authenticated GET search; JSON for artwork search.
@@ -56,6 +56,7 @@ private:
 	size_t mQuery = 0;
 	bool mSearching = true;
 	bool mManual;
+	bool mVerticalImage;
 	std::array<bool, 3> mEnabled;
 	std::vector<Game> mGames;
 	size_t mGame = 0;

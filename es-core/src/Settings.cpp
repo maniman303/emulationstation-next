@@ -253,6 +253,8 @@ void Settings::setDefaults()
 
 	mStringMap["Scraper"] = "ScreenScraper";
 	mStringMap["SteamGridDBApiKey"] = "";
+	mStringMap["SteamGridDBImageSource"] = "sgdb-horizontal";
+	mStringMap["SteamGridDBLogoSource"] = "sgdb-logo";
 	mStringMap["ScrapperImageSrc"] = "ss";
 	mStringMap["ScrapperThumbSrc"] = "box-2D";
 	mStringMap["ScrapperLogoSrc"] = "wheel";

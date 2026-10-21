@@ -168,8 +168,8 @@ Error checkKey(const std::string& trimmedKey)
 	return Error::None; // Key length/format is validated by the API.
 }
 
-Client::Client(const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled)
-	: mQueries(searchNames(name, explicitName)), mManual(manual), mEnabled(enabled)
+Client::Client(const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage)
+	: mQueries(searchNames(name, explicitName)), mManual(manual), mVerticalImage(verticalImage), mEnabled(enabled)
 {
 	if (mQueries.empty()) mDone = true;
 }
@@ -190,7 +190,8 @@ std::string Client::body() const
 	std::string body = "{\"asset_type\":\"";
 	body += mArtwork == 2 ? "logo" : "grid";
 	body += "\",\"game_id\":[" + std::to_string(mGames[mGame].id) + "],\"styles\":[\"all\"],\"languages\":[\"all\"],\"dimensions\":[";
-	if (mArtwork == 0) body += "\"460x215\",\"920x430\"";
+	if (mArtwork == 0 && mVerticalImage) body += "\"600x900\"";
+	else if (mArtwork == 0) body += "\"460x215\",\"920x430\"";
 	else if (mArtwork == 1) body += "\"512x512\",\"1024x1024\"";
 	else body += "\"all\"";
 	body += "],\"formats\":[\"all\"],\"mime\":[\"image/png\"";
@@ -295,8 +296,9 @@ void Client::receive(int status, const std::string& body)
 		const std::string mime = row["mime"].GetString();
 		art.url = row["url"].GetString();
 		if (row.HasMember("is_animated") && row["is_animated"].IsBool() && row["is_animated"].GetBool()) continue;
-		if (art.url.compare(0, 8, "https://") != 0 || (mime != "image/png" && mime != "image/jpeg")) continue;
-		if (mArtwork == 0 && !((width == 460 && height == 215) || (width == 920 && height == 430))) continue;
+		if (art.url.compare(0, 8, "https://") != 0 || (mime != "image/png" && (mArtwork == 2 || mime != "image/jpeg"))) continue;
+		if (mArtwork == 0 && mVerticalImage && (width != 600 || height != 900)) continue;
+		if (mArtwork == 0 && !mVerticalImage && !((width == 460 && height == 215) || (width == 920 && height == 430))) continue;
 		if (mArtwork == 1 && !((width == 512 && height == 512) || (width == 1024 && height == 1024))) continue;
 		art.pixels = width * height;
 		art.extension = mime == "image/png" ? ".png" : ".jpg";
