@@ -1488,6 +1488,15 @@ msgstr "去年"
 msgid "SCRAPE NOW"
 msgstr "開始搜刮"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "圖片來源"
 

@@ -79,11 +79,11 @@ static bool number(const rapidjson::Value& object, const char* name, uint64_t& v
 	return true;
 }
 
-static bool better(const Artwork& a, const Artwork& b)
+static bool better(const Artwork& a, const Artwork& b, bool preferScore)
 {
 	if (b.url.empty()) return true;
+	if (preferScore && a.score != b.score) return a.score > b.score;
 	if (a.hearts != b.hearts) return a.hearts > b.hearts;
-	// Upvotes, scores and API ordering have no influence, even on ties.
 	if (a.pixels != b.pixels) return a.pixels > b.pixels;
 	return a.id < b.id;
 }
@@ -168,8 +168,8 @@ Error checkKey(const std::string& trimmedKey)
 	return Error::None; // Key length/format is validated by the API.
 }
 
-Client::Client(const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage)
-	: mQueries(searchNames(name, explicitName)), mManual(manual), mVerticalImage(verticalImage), mEnabled(enabled)
+Client::Client(const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage, bool preferScore)
+	: mQueries(searchNames(name, explicitName)), mManual(manual), mVerticalImage(verticalImage), mPreferScore(preferScore), mEnabled(enabled)
 {
 	if (mQueries.empty()) mDone = true;
 }
@@ -293,6 +293,7 @@ void Client::receive(int status, const std::string& body)
 			fail(Error::InvalidResponse, 500);
 			return;
 		}
+		if (row.HasMember("score") && row["score"].IsInt64()) art.score = row["score"].GetInt64();
 		const std::string mime = row["mime"].GetString();
 		art.url = row["url"].GetString();
 		if (row.HasMember("is_animated") && row["is_animated"].IsBool() && row["is_animated"].GetBool()) continue;
@@ -303,7 +304,7 @@ void Client::receive(int status, const std::string& body)
 		art.pixels = width * height;
 		art.extension = mime == "image/png" ? ".png" : ".jpg";
 		auto& best = mGames[mGame].artwork[mArtwork];
-		if (better(art, best)) best = art;
+		if (better(art, best, mPreferScore)) best = art;
 	}
 	mSeen += rows.Size();
 	uint64_t total = 0, page = 0;

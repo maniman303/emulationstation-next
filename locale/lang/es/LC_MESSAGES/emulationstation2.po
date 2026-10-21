@@ -1511,6 +1511,15 @@ msgstr "ÚLTIMO AÑO"
 msgid "SCRAPE NOW"
 msgstr "INICIAR ESCRAPEO"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "IMAGEN PRINCIPAL"
 

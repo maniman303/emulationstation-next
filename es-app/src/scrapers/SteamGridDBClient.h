@@ -16,6 +16,7 @@ struct Artwork
 {
 	uint64_t id = 0;
 	uint64_t hearts = 0;
+	int64_t score = 0;
 	uint64_t pixels = 0;
 	std::string url;
 	std::string extension;
@@ -37,7 +38,7 @@ Error checkKey(const std::string& trimmedKey);
 class Client
 {
 public:
-	Client(const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage = false);
+	Client(const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage = false, bool preferScore = false);
 
 	std::string path() const;
 	std::string body() const; // Empty for authenticated GET search; JSON for artwork search.
@@ -57,6 +58,7 @@ private:
 	bool mSearching = true;
 	bool mManual;
 	bool mVerticalImage;
+	bool mPreferScore;
 	std::array<bool, 3> mEnabled;
 	std::vector<Game> mGames;
 	size_t mGame = 0;

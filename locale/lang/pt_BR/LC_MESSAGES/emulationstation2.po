@@ -1514,6 +1514,15 @@ msgstr "ÚLTIMO ANO"
 msgid "SCRAPE NOW"
 msgstr "BAIXAR AGORA"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "FONTE DA MÍDIA DE IMAGEM"
 

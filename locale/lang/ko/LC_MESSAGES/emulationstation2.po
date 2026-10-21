@@ -1495,6 +1495,15 @@ msgstr "작년"
 msgid "SCRAPE NOW"
 msgstr "스크랩 시작"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "이미지 출처"
 

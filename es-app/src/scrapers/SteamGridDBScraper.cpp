@@ -88,8 +88,8 @@ class SteamGridDBRequest : public ScraperRequest
 {
 public:
 	SteamGridDBRequest(std::vector<ScraperSearchResult>& results, const std::string& credential,
-		const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage)
-		: ScraperRequest(results), mKey(credential), mClient(name, explicitName, manual, enabled, verticalImage)
+		const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage, bool preferScore)
+		: ScraperRequest(results), mKey(credential), mClient(name, explicitName, manual, enabled, verticalImage, preferScore)
 	{
 		const auto validation = SteamGridDB::checkKey(mKey);
 		if (validation != SteamGridDB::Error::None)
@@ -203,5 +203,6 @@ void SteamGridDBScraper::generateRequests(const ScraperSearchParams& params,
 		enabled[i] = !Settings::getInstance()->getString(SteamGridDB::mediaSettings[i]).empty() &&
 			(params.isManualScrape || overwrite || !Utils::FileSystem::exists(params.game->getMetadata(SteamGridDB::mediaIds[i])));
 	const bool verticalImage = Settings::getInstance()->getString("SteamGridDBImageSource") == "sgdb-vertical";
-	requests.push(std::unique_ptr<ScraperRequest>(new SteamGridDB::SteamGridDBRequest(results, credential, name, !params.nameOverride.empty(), params.isManualScrape, enabled, verticalImage)));
+	const bool preferScore = Settings::getInstance()->getString("SteamGridDBAssetRanking") == "score";
+	requests.push(std::unique_ptr<ScraperRequest>(new SteamGridDB::SteamGridDBRequest(results, credential, name, !params.nameOverride.empty(), params.isManualScrape, enabled, verticalImage, preferScore)));
 }

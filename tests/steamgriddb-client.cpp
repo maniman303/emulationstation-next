@@ -71,6 +71,15 @@ static void tests()
 	check(client.results()[0].artwork[2].id == 5 && client.results()[0].artwork[2].extension == ".png", "PNG logo selected by hearts");
 	check(client.path().empty(), "completed client has no request");
 
+	Client scoreRanked("Metroid Fusion", false, false, {{true, false, false}}, false, true);
+	scoreRanked.receive(200, match);
+	scoreRanked.receive(200, page(art(11, 20, 5, 460, 215) + "," + art(12, 2, 50, 920, 430), 2));
+	check(scoreRanked.done() && scoreRanked.results()[0].artwork[0].id == 12, "score preference selects highest score before likes");
+	Client scoreTie("Metroid Fusion", false, false, {{true, false, false}}, false, true);
+	scoreTie.receive(200, match);
+	scoreTie.receive(200, page(art(13, 1, 10, 460, 215) + "," + art(14, 5, 10, 920, 430), 2));
+	check(scoreTie.done() && scoreTie.results()[0].artwork[0].id == 14, "score ties use likes before resolution");
+
 	Client vertical("Metroid Fusion", false, false, {{true, false, false}}, true);
 	vertical.receive(200, match);
 	check(vertical.body().find("\"600x900\"") != std::string::npos, "vertical image option requests Steam vertical grid");

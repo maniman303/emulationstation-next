@@ -1546,6 +1546,15 @@ msgstr "آخر سنة"
 msgid "SCRAPE NOW"
 msgstr "جلب الآن"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "مصدر الصورة"
 

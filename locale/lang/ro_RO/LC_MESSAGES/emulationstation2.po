@@ -1511,6 +1511,15 @@ msgstr "ULTIMUL AN"
 msgid "SCRAPE NOW"
 msgstr "PREIA ACUM"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "SURSĂ IMAGINE"
 

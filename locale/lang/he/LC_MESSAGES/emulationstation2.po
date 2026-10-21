@@ -1485,6 +1485,15 @@ msgstr "השנה"
 msgid "SCRAPE NOW"
 msgstr "הפעל SCRAPE"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "מקור תמונה"
 

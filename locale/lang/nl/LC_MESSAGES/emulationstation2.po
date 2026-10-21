@@ -1505,6 +1505,15 @@ msgstr "VORIG JAAR"
 msgid "SCRAPE NOW"
 msgstr "NU SCRAPEN"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "AFBEELDINGSBRON"
 

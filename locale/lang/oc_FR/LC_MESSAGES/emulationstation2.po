@@ -1483,6 +1483,15 @@ msgstr ""
 msgid "SCRAPE NOW"
 msgstr "RECUPERAR ARA"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "FONT IMATGE"
 

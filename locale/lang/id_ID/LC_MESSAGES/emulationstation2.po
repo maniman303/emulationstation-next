@@ -1495,6 +1495,15 @@ msgstr "TAHUN LALU"
 msgid "SCRAPE NOW"
 msgstr "HIMPUN SEKARANG"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "SUMBER GAMBAR"
 

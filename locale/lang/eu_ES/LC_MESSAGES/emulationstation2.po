@@ -1496,6 +1496,15 @@ msgstr "AZKEN URTEA"
 msgid "SCRAPE NOW"
 msgstr "DATUAK LORTU"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "IRUDI ITURRIA"
 

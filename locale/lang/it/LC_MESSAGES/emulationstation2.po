@@ -1497,6 +1497,15 @@ msgstr "ULTIMO ANNO"
 msgid "SCRAPE NOW"
 msgstr "SCARICA INFO ORA"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "SORGENTE IMMAGINE"
 

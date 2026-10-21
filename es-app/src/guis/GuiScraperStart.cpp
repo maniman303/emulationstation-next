@@ -163,6 +163,13 @@ void GuiScraperStart::loadSettingsPage()
 	const bool steamGridDB = scraper == "SteamGridDB";
 	if (steamGridDB)
 	{
+		auto ranking = std::make_shared<OptionListComponent<std::string>>(mWindow, _("BEST ASSET SELECTION"), false);
+		const std::string selectedRanking = Settings::getInstance()->getString("SteamGridDBAssetRanking");
+		ranking->add(_("MOST LIKES"), "likes", selectedRanking != "score");
+		ranking->add(_("HIGHEST SCORE"), "score", selectedRanking == "score");
+		addWithLabel(_("BEST ASSET SELECTION"), ranking);
+		addSaveFunc([ranking] { Settings::getInstance()->setString("SteamGridDBAssetRanking", ranking->getSelected()); });
+
 		auto addSource = [this](const std::string& label, const std::string& setting,
 			std::initializer_list<std::pair<std::string, std::string>> options)
 		{
@@ -295,6 +302,7 @@ void GuiScraperStart::loadSettingsPage()
 	addSwitch(_("OVERWRITE MEDIAS"), "ScrapeOverWrite", true);
 
 	addGroup(_("SCRAPE FOR"));
+	const int rowsBeforeScrapeOptions = mMenu.size();
 
 	if (scrap->isMediaSupported(Scraper::ScraperMediaSource::ShortTitle))
 		addSwitch(_("SHORT NAME"), "ScrapeShortTitle", true);
@@ -327,6 +335,9 @@ void GuiScraperStart::loadSettingsPage()
 
 	if (scrap->isMediaSupported(Scraper::ScraperMediaSource::PadToKey))
 		addSwitch(_("PADTOKEY SETTINGS"), "ScrapePadToKey", true);
+
+	if (mMenu.size() == rowsBeforeScrapeOptions)
+		removeLastRowIfGroup();
 
 
 	addGroup(_("MANUAL SCRAPE"));

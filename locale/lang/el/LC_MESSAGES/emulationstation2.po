@@ -1493,6 +1493,15 @@ msgstr "ΤΕΛΕΥΤΑΙΟΣ ΧΡΟΝΟΣ"
 msgid "SCRAPE NOW"
 msgstr "SCRAPE ΤΩΡΑ"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "ΠΗΓΗ ΕΙΚΟΝΑΣ"
 

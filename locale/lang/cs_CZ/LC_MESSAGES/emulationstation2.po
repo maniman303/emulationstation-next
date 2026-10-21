@@ -1498,6 +1498,15 @@ msgstr "POSLEDNÍ ROK"
 msgid "SCRAPE NOW"
 msgstr "VYHLEDAT"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "ZDROJ OBRÁZKU"
 

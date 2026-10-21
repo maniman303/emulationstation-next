@@ -1499,6 +1499,15 @@ msgstr "FÖRRA ÅRET"
 msgid "SCRAPE NOW"
 msgstr "SKROTA NU"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "BILDKÄLLA"
 

@@ -1499,6 +1499,15 @@ msgstr "NĂM TRƯỚC"
 msgid "SCRAPE NOW"
 msgstr "LẤY DỮ LIỆU NGAY BÂY GIỜ"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "NGUỒN HÌNH ẢNH"
 

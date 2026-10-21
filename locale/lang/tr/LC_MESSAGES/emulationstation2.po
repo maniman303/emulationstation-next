@@ -1501,6 +1501,15 @@ msgstr "SON YIL"
 msgid "SCRAPE NOW"
 msgstr "BİLGİLERİ ŞİMDİ GETİR"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "RESİM KAYNAĞI"
 

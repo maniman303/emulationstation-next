@@ -1498,6 +1498,15 @@ msgstr "LAST YEAR"
 msgid "SCRAPE NOW"
 msgstr "SCRAPE NOW"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "IMAGE SOURCE"
 
