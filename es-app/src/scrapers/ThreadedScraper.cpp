@@ -165,8 +165,9 @@ void ThreadedScraper::processSetupError(const std::string& error)
 void ThreadedScraper::processError(int status, const std::string statusString)
 {
 	if (status == HttpReq::REQ_430_TOOMANYSCRAPS || status == HttpReq::REQ_430_TOOMANYFAILURES ||
-		status == HttpReq::REQ_426_BLACKLISTED || status == HttpReq::REQ_FILESTREAM_ERROR || status == HttpReq::REQ_426_SERVERMAINTENANCE ||
-		status == HttpReq::REQ_403_BADLOGIN || status == HttpReq::REQ_401_FORBIDDEN)
+		status == HttpReq::REQ_426_BLACKLISTED || status == HttpReq::REQ_FILESTREAM_ERROR ||
+		status == HttpReq::REQ_426_SERVERMAINTENANCE || status == HttpReq::REQ_403_BADLOGIN ||
+		status == HttpReq::REQ_401_FORBIDDEN)
 	{
 		mExitCode = ASYNC_ERROR;
 		Window* w = mWindow;
@@ -283,7 +284,7 @@ void ThreadedScraper::acceptResult(ScraperThread& thread)
 	{
 		LOG(LogDebug) << "ThreadedScraper::importScrappedMetadata";
 		game->importP2k(result.p2k);
-		game->getMetadata().importScrappedMetadata(result.mdl);
+		game->getMetadata().importScrappedMetadata(result.mdl, result.scraper);
 		game->detectLanguageAndRegion(true);
 		game->getMetadata().setScrapeDate(result.scraper);
 

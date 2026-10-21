@@ -22,7 +22,8 @@ static std::map<std::string, int> KnowScrapersIds =
 	{ "ScreenScraper", 0 },
 	{ "TheGamesDB", 1 },
 	{ "HfsDB", 2 },
-	{ "ArcadeDB", 3 }
+	{ "ArcadeDB", 3 },
+	{ "SteamGridDB", 4 }
 };
 
 void MetaDataList::initMetadata()
@@ -466,7 +467,7 @@ void MetaDataList::resetChangedFlag()
 	mWasChanged = false;
 }
 
-void MetaDataList::importScrappedMetadata(const MetaDataList& source)
+void MetaDataList::importScrappedMetadata(const MetaDataList& source, const std::string& scraper)
 {
 	int type = MetaDataImportType::Types::ALL;
 
@@ -508,6 +509,12 @@ void MetaDataList::importScrappedMetadata(const MetaDataList& source)
 
 	for (auto mdd : getMDD())
 	{
+		// This provider supplies only a title and artwork. Keep all other
+		// existing metadata, including descriptions and ScreenScraper IDs.
+		if (scraper == "SteamGridDB" && mdd.id != MetaDataId::Name &&
+			mdd.id != MetaDataId::Image && mdd.id != MetaDataId::Thumbnail && mdd.id != MetaDataId::Marquee)
+			continue;
+
 		if (mdd.isStatistic && mdd.id != MetaDataId::ScraperId)
 			continue;
 

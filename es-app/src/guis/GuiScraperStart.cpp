@@ -78,6 +78,7 @@ void GuiScraperStart::loadScrapPage()
 	addGroup(_("FILTERS"));
 
 	auto scraper = Scraper::getScraper(scraperName);
+	const bool steamGridDB = scraperName == "SteamGridDB";
 
 	// Media Filter
 	mFilters = std::make_shared< OptionListComponent<FilterFunc> >(mWindow, _("GAMES TO SCRAPE FOR"), false);
@@ -133,7 +134,12 @@ void GuiScraperStart::loadScrapPage()
 
 	for (auto system : SystemData::sSystemVector)
 		if (system->isGameSystem() && !system->isCollection() && !system->hasPlatformId(PlatformIds::PLATFORM_IGNORE) && scraper->isSupportedPlatform(system))
-			mSystems->add(system->getFullName(), system, currentSystem.empty() ? !system->getPlatformIds().empty() : system->getName() == currentSystem && !system->getPlatformIds().empty());
+		{
+			const bool hasPlatform = !system->getPlatformIds().empty();
+			const bool selected = currentSystem.empty() ? hasPlatform :
+				(system->getName() == currentSystem && (steamGridDB || hasPlatform));
+			mSystems->add(system->getFullName(), system, selected);
+		}
 
 	addWithLabel(_("SYSTEMS INCLUDED"), mSystems);
 
@@ -152,16 +158,32 @@ void GuiScraperStart::loadSettingsPage()
 	addGroup(_("SETTINGS"));
 
 	std::string scraper = Scraper::getScraperName(scrap);
+	const bool steamGridDB = scraper == "SteamGridDB";
+	if (steamGridDB)
+	{
+		auto addSource = [this](const std::string& label, const std::string& choice, const std::string& value, const std::string& setting)
+		{
+			auto list = std::make_shared<OptionListComponent<std::string>>(mWindow, label, false);
+			const bool enabled = !Settings::getInstance()->getString(setting).empty();
+			list->add(choice, value, enabled);
+			list->add(_("NONE"), "", !enabled);
+			addWithLabel(label, list);
+			addSaveFunc([list, setting] { Settings::getInstance()->setString(setting, list->getSelected()); });
+		};
+		addSource(_("IMAGE SOURCE"), _("STEAM HORIZONTAL GRID"), "sgdb-horizontal", "ScrapperImageSrc");
+		addSource(_("BOX SOURCE"), _("STEAM SQUARE GRID"), "sgdb-square", "ScrapperThumbSrc");
+		addSource(_("LOGO SOURCE"), _("Logo"), "sgdb-logo", "ScrapperLogoSrc");
+	}
 
 	std::string imageSourceName = Settings::getInstance()->getString("ScrapperImageSrc");
 	auto imageSource = std::make_shared< OptionListComponent<std::string> >(mWindow, _("IMAGE SOURCE"), false);
 
-	if (scrap->isMediaSupported(Scraper::ScraperMediaSource::Screenshot) ||
+	if (!steamGridDB && (scrap->isMediaSupported(Scraper::ScraperMediaSource::Screenshot) ||
 		scrap->isMediaSupported(Scraper::ScraperMediaSource::Box2d) ||
 		scrap->isMediaSupported(Scraper::ScraperMediaSource::Box3d) ||
 		scrap->isMediaSupported(Scraper::ScraperMediaSource::Mix) ||
 		scrap->isMediaSupported(Scraper::ScraperMediaSource::FanArt) ||
-		scrap->isMediaSupported(Scraper::ScraperMediaSource::TitleShot))
+		scrap->isMediaSupported(Scraper::ScraperMediaSource::TitleShot)))
 	{
 		// Image source : <image> tag
 
@@ -195,7 +217,7 @@ void GuiScraperStart::loadSettingsPage()
 		addSaveFunc([imageSource] { Settings::getInstance()->setString("ScrapperImageSrc", imageSource->getSelected()); });
 	}
 
-	if (scrap->isMediaSupported(Scraper::ScraperMediaSource::Box2d) || scrap->isMediaSupported(Scraper::ScraperMediaSource::Box3d))
+	if (!steamGridDB && (scrap->isMediaSupported(Scraper::ScraperMediaSource::Box2d) || scrap->isMediaSupported(Scraper::ScraperMediaSource::Box3d)))
 	{
 		// Box source : <thumbnail> tag
 		std::string thumbSourceName = Settings::getInstance()->getString("ScrapperThumbSrc");
@@ -234,7 +256,7 @@ void GuiScraperStart::loadSettingsPage()
 			});
 	}
 
-	if (scrap->isMediaSupported(Scraper::ScraperMediaSource::Marquee) || scrap->isMediaSupported(Scraper::ScraperMediaSource::Wheel) || scrap->isMediaSupported(Scraper::ScraperMediaSource::WheelHD))
+	if (!steamGridDB && (scrap->isMediaSupported(Scraper::ScraperMediaSource::Marquee) || scrap->isMediaSupported(Scraper::ScraperMediaSource::Wheel) || scrap->isMediaSupported(Scraper::ScraperMediaSource::WheelHD)))
 	{
 		// Logo source : <marquee> tag
 		std::string logoSourceName = Settings::getInstance()->getString("ScrapperLogoSrc");
@@ -272,7 +294,8 @@ void GuiScraperStart::loadSettingsPage()
 	}
 
 	addSwitch(_("OVERWRITE NAMES"), "ScrapeNames", true);
-	addSwitch(_("OVERWRITE DESCRIPTIONS"), "ScrapeDescription", true);
+	if (!steamGridDB)
+		addSwitch(_("OVERWRITE DESCRIPTIONS"), "ScrapeDescription", true);
 	addSwitch(_("OVERWRITE MEDIAS"), "ScrapeOverWrite", true);
 
 	addGroup(_("SCRAPE FOR"));
@@ -345,12 +368,18 @@ void GuiScraperStart::loadAccountsPage()
 	addInputTextConfigRow(_("CLIENT ID"), "IGDBClientID", false, true);
 	addInputTextConfigRow(_("CLIENT SECRET"), "IGDBSecret", true, true);
 
-	addGroup(_("STEAMGRIDDB"));
+	addGroup("STEAMGRIDDB");
 	addInputTextConfigRow(_("API KEY"), "SteamGridDBApiKey", true, true);
 }
 
 void GuiScraperStart::pressedStart()
 {
+	if (Settings::getInstance()->getString("Scraper") == "SteamGridDB")
+	{
+		start();
+		return;
+	}
+
 	std::vector<SystemData*> systems = mSystems->getSelectedObjects();
 	for(auto system : systems)
 	{

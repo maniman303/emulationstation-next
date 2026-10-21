@@ -15,7 +15,9 @@
 #include <SDL_timer.h>
 #include "HfsDBScraper.h"
 #include "IGDBScraper.h"
+#include "SteamGridDBScraper.h"
 #include "utils/Uri.h"
+#include "LocaleES.h"
 
 #define OVERQUOTA_RETRY_DELAY 15000
 #define OVERQUOTA_RETRY_COUNT 5
@@ -35,6 +37,7 @@ std::vector<std::pair<std::string, Scraper*>> Scraper::scrapers
 #endif
 
 	{ "IGDB", new IGDBScraper() },
+	{ "SteamGridDB", new SteamGridDBScraper() },
 	{ "ArcadeDB", new ArcadeDBScraper() }
 };
 
@@ -525,11 +528,11 @@ std::unique_ptr<ImageDownloadHandle> MDResolveHandle::downloadImageAsync(const s
 
 	return std::unique_ptr<ImageDownloadHandle>(new ImageDownloadHandle(url, saveAs, 
 		resize ? Settings::getInstance()->getInt("ScraperResizeWidth") : 0,
-		resize ? Settings::getInstance()->getInt("ScraperResizeHeight") : 0));
+		resize ? Settings::getInstance()->getInt("ScraperResizeHeight") : 0, mResult.scraper == "SteamGridDB"));
 }
 
-ImageDownloadHandle::ImageDownloadHandle(const std::string& url, const std::string& path, int maxWidth, int maxHeight) : 
-	mSavePath(path), mMaxWidth(maxWidth), mMaxHeight(maxHeight)
+ImageDownloadHandle::ImageDownloadHandle(const std::string& url, const std::string& path, int maxWidth, int maxHeight, bool strictNetworkErrors) :
+	mSavePath(path), mMaxWidth(maxWidth), mMaxHeight(maxHeight), mStrictNetworkErrors(strictNetworkErrors), mStartedTicks(SDL_GetTicks())
 {
 	mRetryCount = 0;
 	mOverQuotaPendingTime = 0;
@@ -574,7 +577,7 @@ ImageDownloadHandle::~ImageDownloadHandle()
 
 int ImageDownloadHandle::getPercent()
 {
-	if (mRequest->status() == HttpReq::REQ_IN_PROGRESS)
+	if (mRequest != nullptr && mRequest->status() == HttpReq::REQ_IN_PROGRESS)
 		return mRequest->getPercent();
 
 	return -1;
@@ -582,6 +585,9 @@ int ImageDownloadHandle::getPercent()
 
 void ImageDownloadHandle::update()
 {
+	if (mStatus != ASYNC_IN_PROGRESS)
+		return;
+
 	if (mOverQuotaPendingTime > 0)
 	{
 		int lastTime = SDL_GetTicks();
@@ -600,6 +606,22 @@ void ImageDownloadHandle::update()
 	}
 
 	HttpReq::Status status = mRequest->status();
+
+	if (mStrictNetworkErrors)
+	{
+		if (status == HttpReq::REQ_IO_ERROR || (status == HttpReq::REQ_IN_PROGRESS && SDL_GetTicks() - mStartedTicks >= 60000))
+		{
+			delete mRequest;
+			mRequest = nullptr;
+			setError(HttpReq::REQ_IO_ERROR, _("COULD NOT CONNECT TO STEAMGRIDDB. CHECK YOUR INTERNET CONNECTION."));
+			return;
+		}
+		if (status == HttpReq::REQ_429_TOOMANYREQUESTS)
+		{
+			setError(status, _("STEAMGRIDDB REQUEST LIMIT REACHED. PLEASE TRY AGAIN LATER."));
+			return;
+		}
+	}
 
 	if (status == HttpReq::REQ_IN_PROGRESS)
 		return;
