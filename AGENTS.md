@@ -62,18 +62,19 @@ for the deployment source and `/usr/bin/emulationstation`. Use network-enabled
 execution from the first SSH/SCP attempt. Do not guess process names, service
 commands, or paths. Never use `killall`, broad `pkill`, or reboot.
 
-The deploy script checks that the deployment directory and mount helper exist,
-that Sway is active, and that there is no conflicting `.new` or upload file. It
-transfers through a unique temporary filename, compares the uploaded SHA-256 to
-the local build, then promotes it to `emulationstation.new`. It preserves an
-existing `.old` backup under a unique `predeploy` filename before running
-`/storage/.config/autostart/mount_emulationstation.sh`.
+The deploy script checks that the deployment directory and mount helper exist
+and that Sway is active. Copy the root build artifact directly to
+`/storage/.config/emulationstation/bin/emulationstation`, replacing that file,
+then compare its SHA-256 with the local build. Only after the hashes match, run
+`/storage/.config/autostart/mount_emulationstation.sh`. Do not use `.new`, `.old`,
+backup, or temporary upload filenames for the binary. Do not change the mount
+helper to introduce staging or backup files.
 
 The mount helper stops an active EmulationStation service, waits up to 10
 seconds for its process to exit, clears stale bind mounts with normal `umount`,
-promotes `emulationstation.new`, applies executable permission, and bind-mounts
-the deployed binary over `/usr/bin/emulationstation`. It retains the previous
-deployed binary as `.old`. It restarts a service that was active before the
+copies the deployed binary to `/storage/mount/emulationstation/emulationstation`,
+applies executable permission, and bind-mounts that runtime copy over
+`/usr/bin/emulationstation`. It restarts a service that was active before the
 helper ran. The deploy script starts `essway.service` if it was inactive, then
 verifies the service, Sway, bind mount, deployed source hash, mounted target
 hash, and running frontend process hash.

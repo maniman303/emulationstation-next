@@ -27,7 +27,7 @@ case "$DEVICE_IP" in
 	''|*[!0-9.]*|.*|*.) fail "DEVICE_IP must be an IPv4 address" ;;
 esac
 
-for tool in ssh sshpass scp sha256sum awk date aarch64-linux-gnu-readelf; do
+for tool in ssh sshpass scp sha256sum awk aarch64-linux-gnu-readelf; do
 	command -v "$tool" >/dev/null 2>&1 || fail "Missing required tool: $tool"
 done
 
@@ -53,58 +53,33 @@ scp_device()
 	SSHPASS=$DEVICE_PASSWORD sshpass -e scp $SSH_OPTIONS "$@"
 }
 
-UPLOAD_ID="$(date +%Y%m%d-%H%M%S)-$$"
-REMOTE_UPLOAD="$REMOTE_DIR/emulationstation.upload.$UPLOAD_ID"
-UPLOAD_PENDING=false
-
-cleanup()
-{
-	if [ "$UPLOAD_PENDING" = true ]; then
-		ssh_device sh -s -- "$REMOTE_UPLOAD" <<'REMOTE_CLEANUP' >/dev/null 2>&1 || true
-set -eu
-rm -f -- "$1"
-REMOTE_CLEANUP
-	fi
-}
-trap cleanup EXIT
-trap 'exit 1' HUP INT TERM
-
 printf 'Build artifact: %s\nSHA-256: %s\n' "$BINARY" "$BUILD_SHA256"
 
 # Check the deployment identity and device environment before transferring.
-ssh_device sh -s -- "$REMOTE_SOURCE" "$REMOTE_UPLOAD" "$REMOTE_HELPER" <<'REMOTE_PREFLIGHT'
+ssh_device sh -s -- "$REMOTE_SOURCE" "$REMOTE_HELPER" <<'REMOTE_PREFLIGHT'
 set -eu
 source=$1
-upload=$2
-helper=$3
+helper=$2
 [ -d "$(dirname "$source")" ] || { echo 'Deployment directory does not exist' >&2; exit 1; }
 [ -f /usr/bin/emulationstation ] || { echo 'System EmulationStation executable is missing' >&2; exit 1; }
 [ -x "$helper" ] || { echo 'Installed mount helper is missing or not executable' >&2; exit 1; }
-[ ! -e "$upload" ] && [ ! -L "$upload" ] || { echo 'Upload path already exists; stopping' >&2; exit 1; }
 if [ -e "$source" ] || [ -L "$source" ]; then
 	[ -f "$source" ] || { echo 'Existing deployment is not a regular file; preserving it and stopping' >&2; exit 1; }
 fi
 systemctl is-active --quiet sway.service || { echo 'sway.service is not active; stopping before deployment' >&2; exit 1; }
 REMOTE_PREFLIGHT
 
-UPLOAD_PENDING=true
-scp_device "$BINARY" "root@$DEVICE_IP:$REMOTE_UPLOAD"
+scp_device "$BINARY" "root@$DEVICE_IP:$REMOTE_SOURCE"
 
-# Verify the upload, replace the storage binary atomically, and refresh the
-# runtime copy through the normal mount helper.
-ssh_device sh -s -- "$BUILD_SHA256" "$REMOTE_UPLOAD" "$REMOTE_SOURCE" <<'REMOTE_DEPLOY'
+# Verify the replaced storage binary before refreshing the runtime mount.
+ssh_device sh -s -- "$BUILD_SHA256" "$REMOTE_SOURCE" <<'REMOTE_DEPLOY'
 set -eu
 expected_build=$1
-upload=$2
-source=$3
+source=$2
 
-actual_upload=$(sha256sum "$upload" | awk '{print $1}')
-[ "$actual_upload" = "$expected_build" ] || { echo 'Uploaded binary SHA-256 mismatch; refusing replacement' >&2; exit 1; }
-chmod +x "$upload"
-if [ -e "$source" ] || [ -L "$source" ]; then
-    [ -f "$source" ] || { echo 'Existing deployment is not a regular file; stopping' >&2; exit 1; }
-fi
-mv -f "$upload" "$source"
+actual_upload=$(sha256sum "$source" | awk '{print $1}')
+[ "$actual_upload" = "$expected_build" ] || { echo 'Uploaded binary SHA-256 mismatch; refusing mount' >&2; exit 1; }
+chmod +x "$source"
 
 service_was_active=false
 if systemctl is-active --quiet essway.service; then
@@ -140,6 +115,5 @@ done
 [ "$running" -gt 0 ] || { echo 'No running frontend uses the deployed executable' >&2; exit 1; }
 printf 'Verified essway.service, sway.service, bind mount, and %s running frontend process(es)\n' "$running"
 REMOTE_DEPLOY
-UPLOAD_PENDING=false
 
 printf 'Deployment complete. Build SHA-256 verified at the upload, mount, and running process.\n'
