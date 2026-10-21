@@ -1,5 +1,10 @@
 # Agent Instructions
 
+## C++ conventions
+
+- Do not add unnamed (anonymous) namespaces. Keep file-local declarations at
+  file scope or use a named namespace when grouping is needed.
+
 ## RG DS Plus build and deployment
 
 Use this repository for EmulationStation frontend work. Build and verify the
