@@ -1492,6 +1492,15 @@ msgstr "작년"
 msgid "SCRAPE NOW"
 msgstr "스크랩 시작"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "이미지 출처"
 
@@ -1584,6 +1593,9 @@ msgstr "클라이언트 ID"
 
 msgid "CLIENT SECRET"
 msgstr "클라이언트 비밀ㅋ"
+
+msgid "API KEY"
+msgstr "API 키"
 
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
@@ -4045,3 +4057,33 @@ msgstr[0] "%d 초 전"
 
 #~ msgid "THE USER INTERFACE MODE IS NOW UNLOCKED"
 #~ msgstr "사용자 인터페이스 모드가 사용 해제됨"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDB 인증 정보가 유효하지 않습니다."
+
+msgid "COULD NOT CONNECT TO STEAMGRIDDB. CHECK YOUR INTERNET CONNECTION."
+msgstr ""
+
+msgid "STEAM HORIZONTAL GRID"
+msgstr ""
+
+msgid "STEAM SQUARE GRID"
+msgstr ""
+
+msgid "STEAM VERTICAL GRID"
+msgstr ""
+
+msgid "STEAMGRIDDB API KEY IS INVALID. CHECK SCRAPER > ACCOUNTS."
+msgstr ""
+
+msgid "STEAMGRIDDB API KEY IS MISSING. ENTER IT IN SCRAPER > ACCOUNTS."
+msgstr ""
+
+msgid "STEAMGRIDDB IS UNAVAILABLE. PLEASE TRY AGAIN LATER."
+msgstr ""
+
+msgid "STEAMGRIDDB REQUEST LIMIT REACHED. PLEASE TRY AGAIN LATER."
+msgstr ""
+
+msgid "STEAMGRIDDB RETURNED AN INVALID RESPONSE. PLEASE TRY AGAIN LATER."
+msgstr ""

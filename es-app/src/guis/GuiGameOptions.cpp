@@ -402,7 +402,7 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 			GuiGameScraper* scr = new GuiGameScraper(mWindow, scraperParams, [game, scraperParams](const ScraperSearchResult& result)
 			{
 				game->importP2k(result.p2k);
-				game->getMetadata().importScrappedMetadata(result.mdl);	
+				game->getMetadata().importScrappedMetadata(result.mdl, result.scraper);
 				game->detectLanguageAndRegion(true);
 				game->getMetadata().setScrapeDate(result.scraper);
 

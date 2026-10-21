@@ -17,6 +17,7 @@ AsyncNotificationComponent::AsyncNotificationComponent(Window* window, bool acti
 	mFadeOut = 0;
 	mPercent = -1;
 	mClosing = false;
+	mCloseAfter = -1;
 
 	auto theme = ThemeData::getMenuTheme();
 
@@ -70,6 +71,12 @@ void AsyncNotificationComponent::close()
 {
 	mClosing = true;	
 	mFadeTime = -1;
+}
+
+void AsyncNotificationComponent::closeAfter(int duration)
+{
+	if (duration > 0)
+		mCloseAfter = duration;
 }
 
 AsyncNotificationComponent::~AsyncNotificationComponent()
@@ -150,6 +157,16 @@ void AsyncNotificationComponent::render(const Transform4x4f& parentTrans)
 void AsyncNotificationComponent::update(int deltaTime)
 {
 	GuiComponent::update(deltaTime);
+
+	if (mCloseAfter > 0)
+	{
+		mCloseAfter -= deltaTime;
+		if (mCloseAfter <= 0)
+		{
+			mCloseAfter = -1;
+			close();
+		}
+	}
 
 	// compute fade effects
 

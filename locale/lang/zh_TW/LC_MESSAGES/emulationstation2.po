@@ -1485,6 +1485,15 @@ msgstr "去年"
 msgid "SCRAPE NOW"
 msgstr "開始搜刮"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "圖片來源"
 
@@ -1577,6 +1586,9 @@ msgstr ""
 
 msgid "CLIENT SECRET"
 msgstr ""
+
+msgid "API KEY"
+msgstr "API 金鑰"
 
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
@@ -4020,3 +4032,33 @@ msgstr[0] "%d 幾秒前"
 
 #~ msgid "HAS MEDIAS"
 #~ msgstr "含有媒體"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDB 憑證無效。"
+
+msgid "COULD NOT CONNECT TO STEAMGRIDDB. CHECK YOUR INTERNET CONNECTION."
+msgstr ""
+
+msgid "STEAM HORIZONTAL GRID"
+msgstr ""
+
+msgid "STEAM SQUARE GRID"
+msgstr ""
+
+msgid "STEAM VERTICAL GRID"
+msgstr ""
+
+msgid "STEAMGRIDDB API KEY IS INVALID. CHECK SCRAPER > ACCOUNTS."
+msgstr ""
+
+msgid "STEAMGRIDDB API KEY IS MISSING. ENTER IT IN SCRAPER > ACCOUNTS."
+msgstr ""
+
+msgid "STEAMGRIDDB IS UNAVAILABLE. PLEASE TRY AGAIN LATER."
+msgstr ""
+
+msgid "STEAMGRIDDB REQUEST LIMIT REACHED. PLEASE TRY AGAIN LATER."
+msgstr ""
+
+msgid "STEAMGRIDDB RETURNED AN INVALID RESPONSE. PLEASE TRY AGAIN LATER."
+msgstr ""

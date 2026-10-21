@@ -1498,6 +1498,15 @@ msgstr "SON YIL"
 msgid "SCRAPE NOW"
 msgstr "BİLGİLERİ ŞİMDİ GETİR"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "RESİM KAYNAĞI"
 
@@ -1590,6 +1599,9 @@ msgstr "İSTEMCİ KİMLİĞİ"
 
 msgid "CLIENT SECRET"
 msgstr "GİZLİ İSTEMCİ"
+
+msgid "API KEY"
+msgstr "API ANAHTARI"
 
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
@@ -4081,3 +4093,33 @@ msgstr[1] "%d saniye önce"
 
 #~ msgid "ACCOUNT"
 #~ msgstr "HESAP"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDB kimlik bilgileri geçersiz."
+
+msgid "COULD NOT CONNECT TO STEAMGRIDDB. CHECK YOUR INTERNET CONNECTION."
+msgstr ""
+
+msgid "STEAM HORIZONTAL GRID"
+msgstr ""
+
+msgid "STEAM SQUARE GRID"
+msgstr ""
+
+msgid "STEAM VERTICAL GRID"
+msgstr ""
+
+msgid "STEAMGRIDDB API KEY IS INVALID. CHECK SCRAPER > ACCOUNTS."
+msgstr ""
+
+msgid "STEAMGRIDDB API KEY IS MISSING. ENTER IT IN SCRAPER > ACCOUNTS."
+msgstr ""
+
+msgid "STEAMGRIDDB IS UNAVAILABLE. PLEASE TRY AGAIN LATER."
+msgstr ""
+
+msgid "STEAMGRIDDB REQUEST LIMIT REACHED. PLEASE TRY AGAIN LATER."
+msgstr ""
+
+msgid "STEAMGRIDDB RETURNED AN INVALID RESPONSE. PLEASE TRY AGAIN LATER."
+msgstr ""

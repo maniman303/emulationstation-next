@@ -1470,6 +1470,15 @@ msgstr ""
 msgid "SCRAPE NOW"
 msgstr "SØK NÅ"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr ""
 
@@ -1562,6 +1571,9 @@ msgstr ""
 
 msgid "CLIENT SECRET"
 msgstr ""
+
+msgid "API KEY"
+msgstr "API-NØKKEL"
 
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
@@ -4255,3 +4267,33 @@ msgstr[1] ""
 
 #~ msgid "UPDATE FAILED, THE SYSTEM WILL NOW REBOOT"
 #~ msgstr "OPPDATERING FEILET, SYSTEMET VIL STARTES PÅ NYTT"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "IGDB-påloggingsinformasjonen er ugyldig."
+
+msgid "COULD NOT CONNECT TO STEAMGRIDDB. CHECK YOUR INTERNET CONNECTION."
+msgstr ""
+
+msgid "STEAM HORIZONTAL GRID"
+msgstr ""
+
+msgid "STEAM SQUARE GRID"
+msgstr ""
+
+msgid "STEAM VERTICAL GRID"
+msgstr ""
+
+msgid "STEAMGRIDDB API KEY IS INVALID. CHECK SCRAPER > ACCOUNTS."
+msgstr ""
+
+msgid "STEAMGRIDDB API KEY IS MISSING. ENTER IT IN SCRAPER > ACCOUNTS."
+msgstr ""
+
+msgid "STEAMGRIDDB IS UNAVAILABLE. PLEASE TRY AGAIN LATER."
+msgstr ""
+
+msgid "STEAMGRIDDB REQUEST LIMIT REACHED. PLEASE TRY AGAIN LATER."
+msgstr ""
+
+msgid "STEAMGRIDDB RETURNED AN INVALID RESPONSE. PLEASE TRY AGAIN LATER."
+msgstr ""

@@ -252,6 +252,11 @@ void Settings::setDefaults()
 	mStringMap["GamelistViewStyle"] = "automatic";
 
 	mStringMap["Scraper"] = "ScreenScraper";
+	mStringMap["SteamGridDBApiKey"] = "";
+	mStringMap["SteamGridDBImageSource"] = "sgdb-horizontal";
+	mStringMap["SteamGridDBBoxSource"] = "sgdb-square";
+	mStringMap["SteamGridDBLogoSource"] = "sgdb-logo";
+	mStringMap["SteamGridDBAssetRanking"] = "likes";
 	mStringMap["ScrapperImageSrc"] = "ss";
 	mStringMap["ScrapperThumbSrc"] = "box-2D";
 	mStringMap["ScrapperLogoSrc"] = "wheel";

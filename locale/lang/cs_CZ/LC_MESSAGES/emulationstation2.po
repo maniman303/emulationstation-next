@@ -1495,6 +1495,15 @@ msgstr "POSLEDNÍ ROK"
 msgid "SCRAPE NOW"
 msgstr "VYHLEDAT"
 
+msgid "BEST ASSET SELECTION"
+msgstr ""
+
+msgid "MOST LIKES"
+msgstr ""
+
+msgid "HIGHEST SCORE"
+msgstr ""
+
 msgid "IMAGE SOURCE"
 msgstr "ZDROJ OBRÁZKU"
 
@@ -1587,6 +1596,9 @@ msgstr ""
 
 msgid "CLIENT SECRET"
 msgstr ""
+
+msgid "API KEY"
+msgstr "KLÍČ API"
 
 msgid ""
 "WARNING: SOME OF YOUR SELECTED SYSTEMS DO NOT HAVE A PLATFORM SET. RESULTS "
@@ -4485,3 +4497,33 @@ msgstr[2] "%d před sekundami"
 
 #~ msgid "JUMP ON B"
 #~ msgstr "TLAČÍTKO B = NAHORU"
+
+msgid "INVALID IGDB CREDENTIALS"
+msgstr "Přihlašovací údaje IGDB jsou neplatné."
+
+msgid "COULD NOT CONNECT TO STEAMGRIDDB. CHECK YOUR INTERNET CONNECTION."
+msgstr ""
+
+msgid "STEAM HORIZONTAL GRID"
+msgstr ""
+
+msgid "STEAM SQUARE GRID"
+msgstr ""
+
+msgid "STEAM VERTICAL GRID"
+msgstr ""
+
+msgid "STEAMGRIDDB API KEY IS INVALID. CHECK SCRAPER > ACCOUNTS."
+msgstr ""
+
+msgid "STEAMGRIDDB API KEY IS MISSING. ENTER IT IN SCRAPER > ACCOUNTS."
+msgstr ""
+
+msgid "STEAMGRIDDB IS UNAVAILABLE. PLEASE TRY AGAIN LATER."
+msgstr ""
+
+msgid "STEAMGRIDDB REQUEST LIMIT REACHED. PLEASE TRY AGAIN LATER."
+msgstr ""
+
+msgid "STEAMGRIDDB RETURNED AN INVALID RESPONSE. PLEASE TRY AGAIN LATER."
+msgstr ""

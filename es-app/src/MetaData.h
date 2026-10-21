@@ -174,7 +174,7 @@ public:
 	
 	const bool exists(const std::string& key) const;
 
-	void importScrappedMetadata(const MetaDataList& source);
+	void importScrappedMetadata(const MetaDataList& source, const std::string& scraper = "");
 
 	std::string getRelativeRootPath();
 

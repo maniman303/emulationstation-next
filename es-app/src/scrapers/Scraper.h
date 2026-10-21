@@ -139,7 +139,7 @@ typedef void (*generate_scraper_requests_func)(const ScraperSearchParams& params
 class ImageDownloadHandle : public AsyncHandle
 {
 public:
-	ImageDownloadHandle(const std::string& url, const std::string& path, int maxWidth, int maxHeight);
+	ImageDownloadHandle(const std::string& url, const std::string& path, int maxWidth, int maxHeight, bool strictNetworkErrors = false);
 	~ImageDownloadHandle();
 
 	void update() override;
@@ -158,6 +158,8 @@ private:
 	std::string mSavePath;
 	int mMaxWidth;
 	int mMaxHeight;
+	bool mStrictNetworkErrors;
+	unsigned int mStartedTicks;
 };
 
 
