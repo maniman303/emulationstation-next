@@ -564,6 +564,9 @@ void ViewController::launch(FileData* game, LaunchGameOptions options, Vector3f 
 	stopAnimation(1); // make sure the fade in isn't still playing
 	mWindow->stopNotificationPopups(); // make sure we disable any existing info popup
 	mLockInput = true;
+	mGameReturnLastFrameTime = 0;
+	mGameReturnWaitTime = 0;
+	mGameReturnReadyFrames = 0;
 
 	GuiComponent::isLaunchTransitionRunning = true;
 		
@@ -609,6 +612,7 @@ void ViewController::launch(FileData* game, LaunchGameOptions options, Vector3f 
 			{
 				setAnimation(new LambdaAnimation(fadeFunc, 800), 0, [this] { GuiComponent::isLaunchTransitionRunning = false; mLockInput = false; mWindow->closeSplashScreen(); }, true, 3);
 				this->onFileChanged(game, FILE_METADATA_CHANGED);
+				mWaitForGameReturn = true;
 			}
 		});
 	} 
@@ -630,6 +634,7 @@ void ViewController::launch(FileData* game, LaunchGameOptions options, Vector3f 
 				mCamera = origCamera;
 				setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 600), 0, [this] { GuiComponent::isLaunchTransitionRunning = false; mLockInput = false; mWindow->closeSplashScreen(); }, true, 3);
 				this->onFileChanged(game, FILE_METADATA_CHANGED);
+				mWaitForGameReturn = true;
 			}
 		});
 	} 
@@ -649,6 +654,7 @@ void ViewController::launch(FileData* game, LaunchGameOptions options, Vector3f 
 				mCamera = origCamera;
 				setAnimation(new LaunchAnimation(mCamera, mFadeOpacity, center, 10), 0, [this] { GuiComponent::isLaunchTransitionRunning = false; mLockInput = false; mWindow->closeSplashScreen(); }, true, 3);
 				this->onFileChanged(game, FILE_METADATA_CHANGED);
+				mWaitForGameReturn = true;
 			}
 		});
 	}
@@ -935,7 +941,15 @@ void ViewController::update(int deltaTime)
 	if (mCurrentView)
 		mCurrentView->update(deltaTime);
 
-	updateSelf(deltaTime);
+	if (mWaitForGameReturn)
+	{
+		// Keep the return effect covered while the restored view loads its textures.
+		// Discard loading time until complete frames (including swaps) run smoothly.
+		updateSelf(0);
+		mWindow->normalizeNextUpdate();
+	}
+	else
+		updateSelf(deltaTime);
 
 	if (mDeferPlayViewTransitionTo != nullptr)
 	{
@@ -995,6 +1009,27 @@ void ViewController::render(const Transform4x4f& parentTrans)
 			Renderer::setMatrix(parentTrans);
 			Renderer::drawRect(0.0f, 0.0f, Renderer::getScreenWidth(), Renderer::getScreenHeight(), fadeColor, fadeColor);
 		}
+	}
+
+	if (mWaitForGameReturn)
+	{
+		// An empty decode queue does not mean uploads, rendering and buffer swaps
+		// have settled. Sample complete frames after restoring the view instead.
+		unsigned int now = SDL_GetTicks();
+		int fpsLimit = Settings::FpsLimit();
+		unsigned int frameBudget = fpsLimit > 0 ? std::max(50, 2000 / fpsLimit) : 50;
+		if (mGameReturnLastFrameTime != 0 &&
+			now - mGameReturnLastFrameTime <= frameBudget && TextureResource::getQueueSize() == 0)
+			++mGameReturnReadyFrames;
+		else
+			mGameReturnReadyFrames = 0;
+
+		if (mGameReturnLastFrameTime != 0)
+			mGameReturnWaitTime += now - mGameReturnLastFrameTime;
+		mGameReturnLastFrameTime = now;
+		// Do not leave input locked indefinitely on a persistently slow system.
+		if (mGameReturnReadyFrames >= 3 || mGameReturnWaitTime >= 2000)
+			mWaitForGameReturn = false;
 	}
 }
 

@@ -132,6 +132,10 @@ private:
 	Transform4x4f mCamera;
 	float mFadeOpacity;
 	bool mLockInput;
+	bool mWaitForGameReturn = false;
+	unsigned int mGameReturnLastFrameTime = 0;
+	unsigned int mGameReturnWaitTime = 0;
+	int mGameReturnReadyFrames = 0;
 	std::shared_ptr<GuiComponent>	mDeferPlayViewTransitionTo;
 	State mState;
 };
