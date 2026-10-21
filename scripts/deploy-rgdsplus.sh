@@ -50,7 +50,7 @@ ssh_device()
 }
 scp_device()
 {
-	SSHPASS=$DEVICE_PASSWORD sshpass -e scp $SSH_OPTIONS "$@"
+	SSHPASS=$DEVICE_PASSWORD sshpass -e scp -O $SSH_OPTIONS "$@"
 }
 
 printf 'Build artifact: %s\nSHA-256: %s\n' "$BINARY" "$BUILD_SHA256"
