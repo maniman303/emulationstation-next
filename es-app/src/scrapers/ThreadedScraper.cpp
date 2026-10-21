@@ -63,11 +63,7 @@ ThreadedScraper::~ThreadedScraper()
 {
 	if (mWndNotification != nullptr)
 	{
-		if (mExitCode == ASYNC_ERROR)
-			mWndNotification->closeAfter(6000);
-		else
-			mWndNotification->close();
-
+		mWndNotification->closeAfter(3000);
 		mWndNotification = nullptr;
 	}
 

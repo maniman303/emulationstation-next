@@ -20,6 +20,20 @@
 using namespace PlatformIds;
 using namespace rapidjson;
 
+class IGDBCredentialErrorRequest : public ScraperRequest
+{
+	public:
+		explicit IGDBCredentialErrorRequest(std::vector<ScraperSearchResult>& results)
+			: ScraperRequest(results)
+	{
+	}
+
+	void update() override
+	{
+		setError(HttpReq::REQ_403_BADLOGIN, _("INVALID IGDB CREDENTIALS"));
+	}
+};
+
 const std::map<PlatformId, std::string> igdb_platformids
 {
 	{ ARCADE, "52" }, // Has special filtering
@@ -134,6 +148,17 @@ const std::set<Scraper::ScraperMediaSource>& IGDBScraper::getSupportedMedias()
 	return mdds;
 }
 
+bool IGDBScraper::hasMissingMedia(FileData* file)
+{
+	if (Scraper::hasMissingMedia(file))
+		return true;
+
+	const auto& metadata = file->getMetadata();
+	return metadata.get(MetaDataId::Desc).empty() ||
+		metadata.get(MetaDataId::Developer).empty() ||
+		metadata.get(MetaDataId::Publisher).empty();
+}
+
 bool IGDBScraper::ensureToken()
 {
 	if (!mToken.empty() && Utils::Time::DateTime::now().elapsedSecondsSince(mTokenDate) < 1800) // make Token expire after 30mn
@@ -169,9 +194,7 @@ void IGDBScraper::generateRequests(const ScraperSearchParams& params, std::queue
 {
 	if (!ensureToken())
 	{
-		if (!params.isManualScrape)
-			throw std::runtime_error(_("INVALID IGDB CREDENTIALS"));
-
+		requests.push(std::unique_ptr<ScraperRequest>(new IGDBCredentialErrorRequest(results)));
 		return;
 	}
 
