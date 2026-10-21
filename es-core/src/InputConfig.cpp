@@ -226,16 +226,20 @@ bool InputConfig::isMappedTo(const std::string& name, Input input, bool reversed
 bool InputConfig::isMappedLike(const std::string& name, Input input)
 {
 	if (name == "left")
-		return isMappedTo("left", input) || isMappedTo("leftanalogleft", input) || isMappedTo("rightanalogleft", input);
+		return isMappedTo("left", input) || isMappedTo("leftanalogleft", input) ||
+			(mRightAnalogAvailable && isMappedTo("rightanalogleft", input));
 
 	if (name == "right")
-		return isMappedTo("right", input) || isMappedTo("leftanalogright", input) || isMappedTo("rightanalogright", input);
+		return isMappedTo("right", input) || isMappedTo("leftanalogright", input) ||
+			(mRightAnalogAvailable && isMappedTo("rightanalogright", input));
 
 	if (name == "up")
-		return isMappedTo("up", input) || isMappedTo("leftanalogup", input) || isMappedTo("rightanalogup", input);
+		return isMappedTo("up", input) || isMappedTo("leftanalogup", input) ||
+			(mRightAnalogAvailable && isMappedTo("rightanalogup", input));
 
 	if (name == "down")
-		return isMappedTo("down", input) || isMappedTo("leftanalogdown", input) || isMappedTo("rightanalogdown", input);
+		return isMappedTo("down", input) || isMappedTo("leftanalogdown", input) ||
+			(mRightAnalogAvailable && isMappedTo("rightanalogdown", input));
 
 	return isMappedTo(name, input);
 }

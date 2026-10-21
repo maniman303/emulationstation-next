@@ -15,6 +15,9 @@
 #define BUTTON_GRID_HORIZ_PADDING (Renderer::getScreenWidth()*0.0052083333)
 #define BUTTON_LAYER_SIZE (4)
 
+static constexpr int KEYBOARD_REPEAT_DELAY = 400;
+static constexpr int KEYBOARD_REPEAT_INTERVAL = 80;
+
 std::vector<std::vector<const char*>> kbUs {
 
 	{ "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "_", "+", "DEL" },
@@ -345,6 +348,24 @@ void GuiTextEditPopupKeyboard::onSizeChanged()
 
 bool GuiTextEditPopupKeyboard::input(InputConfig* config, Input input)
 {
+	// Match the physical control so hat/axis releases work even without a direction mapping.
+	if (input.device == mNavigationInput.device && input.type == mNavigationInput.type &&
+		input.id == mNavigationInput.id)
+	{
+		if (input.value == mNavigationInput.value)
+			return true;
+		stopNavigationRepeat();
+	}
+
+	const bool keyboard = config->getDeviceId() == DEVICE_KEYBOARD;
+	if (input.value && (keyboard
+		? config->isMappedTo(BUTTON_OK, input) || input.id == SDLK_BACKSPACE || input.id == SDLK_DELETE
+		: config->isMappedTo("a", input) || config->isMappedTo("b", input)))
+	{
+		// Keep the held direction latched until release so duplicate events cannot restart traversal.
+		mNavigationDirection = Vector2i::Zero();
+	}
+
 	// L3 is an optional, unadvertised alias for L1. Accept both saved mapping names.
 	if (config->isMappedTo("leftshoulder", input) || config->isMappedTo("pageup", input) ||
 		config->isMappedTo("leftthumb", input) || config->isMappedTo("l3", input))
@@ -428,16 +449,65 @@ bool GuiTextEditPopupKeyboard::input(InputConfig* config, Input input)
 
 	const auto previousGridCursor = mGrid.getCursor();
 	const auto previousKeyCursor = mKeyboardGrid->getCursor();
-	const bool navigating = input.value != 0 && (config->isMappedLike("up", input) ||
-		config->isMappedLike("down", input) || config->isMappedLike("left", input) || config->isMappedLike("right", input));
-	if (!navigating)
+	// Match ComponentGrid's direction priority for inputs mapped to multiple directions.
+	const Vector2i direction = config->isMappedLike("right", input) ? Vector2i(1, 0)
+		: config->isMappedLike("left", input) ? Vector2i(-1, 0)
+		: config->isMappedLike("up", input) ? Vector2i(0, -1)
+		: config->isMappedLike("down", input) ? Vector2i(0, 1) : Vector2i::Zero();
+	if (!input.value || direction == Vector2i::Zero())
 		return GuiComponent::input(config, input);
 
+	const bool keyboardSelected = mGrid.getSelectedComponent() == mKeyboardGrid;
 	const bool handled = GuiComponent::input(config, input);
+	if (keyboardSelected && mGrid.getSelectedComponent() == mKeyboardGrid)
+	{
+		mNavigationInput = input;
+		mNavigationDirection = direction;
+		mNavigationRepeatTimer = KEYBOARD_REPEAT_DELAY;
+	}
+	else
+		stopNavigationRepeat();
 	if (mNavigationSound &&
 		(previousGridCursor != mGrid.getCursor() || previousKeyCursor != mKeyboardGrid->getCursor()))
 		mNavigationSound->play(0.8f);
 	return handled;
+}
+
+void GuiTextEditPopupKeyboard::update(int deltaTime)
+{
+	GuiComponent::update(deltaTime);
+
+	if (mGrid.getSelectedComponent() != mKeyboardGrid)
+		stopNavigationRepeat();
+	if (mNavigationDirection == Vector2i::Zero())
+		return;
+
+	mNavigationRepeatTimer -= deltaTime;
+	while (mNavigationRepeatTimer <= 0)
+	{
+		// Move within the keyboard only: never invoke the popup's wrap/focus fallback.
+		if (!mKeyboardGrid->moveCursor(mNavigationDirection))
+		{
+			mNavigationDirection = Vector2i::Zero();
+			break;
+		}
+		if (mNavigationSound)
+			mNavigationSound->play(0.8f);
+		mNavigationRepeatTimer += KEYBOARD_REPEAT_INTERVAL;
+	}
+}
+
+void GuiTextEditPopupKeyboard::topWindow(bool isTop)
+{
+	if (!isTop)
+		stopNavigationRepeat();
+	GuiComponent::topWindow(isTop);
+}
+
+void GuiTextEditPopupKeyboard::stopNavigationRepeat()
+{
+	mNavigationInput = Input();
+	mNavigationDirection = Vector2i::Zero();
 }
 
 void GuiTextEditPopupKeyboard::toggleKeyState(bool& state, std::shared_ptr<ButtonComponent>& button)
@@ -510,6 +580,7 @@ std::shared_ptr<ButtonComponent> GuiTextEditPopupKeyboard::makeButton(const std:
 {
 	std::shared_ptr<ButtonComponent> button = std::make_shared<ButtonComponent>(mWindow, key, _("SELECT"), [this, key, shiftedKey, altedKey, altedShiftedKey]
 	{						
+		mNavigationDirection = Vector2i::Zero();
 		if (key == _U("\uF058") || key.find("OK") != std::string::npos)
 		{	
 			if (mMultiLine && (mShift || mAlt))

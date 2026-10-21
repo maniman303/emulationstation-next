@@ -1,4 +1,5 @@
 #include "InputManager.h"
+#include "InputDeviceCapabilities.h"
 
 #include "utils/FileSystemUtil.h"
 #include "CECInput.h"
@@ -20,6 +21,7 @@
 #include "renderers/Renderer.h"
 #include <fstream>
 #include <set>
+#include <cstdlib>
 
 #ifdef HAVE_UDEV
 #include <libudev.h>
@@ -576,6 +578,21 @@ void InputManager::rebuildAllJoysticks(bool deinit)
 #endif
 
 		mInputConfigs[joyId] = new InputConfig(joyId, idx, deviceName, guid, SDL_JoystickNumButtons(joy), SDL_JoystickNumHats(joy), SDL_JoystickNumAxes(joy), devicePath);
+
+#if defined(ROCKNIX)
+		std::string model = Utils::FileSystem::readAllText("/sys/firmware/devicetree/base/model");
+		model.erase(std::find(model.begin(), model.end(), '\0'), model.end());
+		const std::string node = Utils::FileSystem::getFileName(devicePath);
+		const std::string deviceClass = node.compare(0, 6, "hidraw") == 0 ? "hidraw" : "input";
+		const std::string sysfsNode = "/sys/class/" + deviceClass + "/" + node + "/device";
+		char* resolvedNode = realpath(sysfsNode.c_str(), nullptr);
+		const std::string sysfsPath = resolvedNode ? resolvedNode : "";
+		free(resolvedNode);
+		const bool rightAnalogAvailable = hasPhysicalRightAnalogStick(model, deviceName, sysfsPath);
+		mInputConfigs[joyId]->setRightAnalogAvailable(rightAnalogAvailable);
+		if (!rightAnalogAvailable)
+			LOG(LogInfo) << "Built-in single-stick controller: ignoring phantom right-stick navigation axes";
+#endif
 
 		if (!loadInputConfig(mInputConfigs[joyId]))
 		{

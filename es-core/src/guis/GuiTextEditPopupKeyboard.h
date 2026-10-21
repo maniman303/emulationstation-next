@@ -16,7 +16,8 @@ public:
 		const std::function<void(const std::string&)>& okCallback, bool multiLine, const std::string acceptBtnText = "OK");
 
 	bool input(InputConfig* config, Input input);
-	//void update(int deltatime) override;
+	void update(int deltaTime) override;
+	void topWindow(bool isTop) override;
 	void onSizeChanged();
 	std::vector<HelpPrompt> getHelpPrompts() override;
 
@@ -42,6 +43,7 @@ private:
 	void updateKeyboardButtons();
 	void shiftKeys();
 	void altKeys();
+	void stopNavigationRepeat();
 
 	NinePatchComponent mBackground;
 	ComponentGrid mGrid;
@@ -50,6 +52,9 @@ private:
 	std::shared_ptr<TextEditComponent> mText;
 	std::shared_ptr<ComponentGrid> mKeyboardGrid;
 	std::shared_ptr<Sound> mNavigationSound;
+	Input mNavigationInput;
+	Vector2i mNavigationDirection = Vector2i::Zero();
+	int mNavigationRepeatTimer = 0;
 	
 	std::function<void(const std::string&)> mOkCallback;
 
