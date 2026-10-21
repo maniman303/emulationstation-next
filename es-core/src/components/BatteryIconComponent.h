@@ -7,6 +7,7 @@
 #include "components/ImageComponent.h"
 #include "utils/Platform.h"
 #include "watchers/WatchersManager.h"
+#include "StatusComponentState.h"
 
 class Window;
 
@@ -24,8 +25,9 @@ public:
 	void OnWatcherChanged(IWatcher* component) override;
 
 private:
-	Utils::Platform::BatteryInformation mBatteryInfo;
-	bool mDirty;
+	bool refreshStatus() override;
+	bool updateBatteryStatus(bool resolveImage);
+	StatusComponents::LatestReading<Utils::Platform::BatteryInformation> mBatteryInfo;
 
 	std::string mIncharge;
 	std::string mFull;

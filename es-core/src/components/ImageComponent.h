@@ -133,6 +133,7 @@ public:
 protected:
 	std::shared_ptr<TextureResource> mTexture;
 	bool mTextureLoaded;
+	bool refreshBackgroundImage();
 
 	std::shared_ptr<TextureResource> mLoadingTexture;
 	bool mLoadingTextureLoaded;

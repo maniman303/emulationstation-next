@@ -18,6 +18,8 @@ public:
 	virtual void update(int deltaTime);
 
 private:
+	bool refreshStatus() override;
+	bool updateClockText();
 	int mClockElapsed;
 };
 

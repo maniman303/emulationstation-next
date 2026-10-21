@@ -68,6 +68,7 @@ public:
 
 	bool input(InputConfig* config, Input input) override;
 	void update(int deltaTime) override;
+	bool refreshBackgroundStatus() override;
 	void render(const Transform4x4f& parentTrans) override;
 
 	enum GameListViewType

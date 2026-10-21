@@ -19,12 +19,13 @@ public:
 
 	void onSizeChanged() override;
 	void update(int deltaTime) override;
+	bool refreshBackgroundStatus() override;
 	void setSize(float w, float h);
 
 	void recalcLayout() override;
 
 private:
-	void performLayout();
+	void performLayout(bool resizeChildren = true);
 
 	bool mHorizontal;
 	bool mReverse;

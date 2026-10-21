@@ -59,6 +59,7 @@ public:
 	virtual bool	input(InputConfig* config, Input input);
 	virtual void	update(int deltaTime);
 	virtual void	render(const Transform4x4f& parentTrans);
+	virtual bool	refreshBackgroundStatus();
 
 	Vector3f		getPosition() const;
 	void			setPosition(float x, float y, float z = 0.0f);
@@ -226,6 +227,7 @@ public:
 	std::map<std::string, ThemeStoryboard*>& getStoryBoards() { return mStoryBoards; };
 
 protected:
+	virtual bool	refreshStatus();
 	void			beginCustomClipRect();
 	void			endCustomClipRect();
 

@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "CoveredSceneRenderScope.h"
 
 #include "components/HelpComponent.h"
 #include "components/ImageComponent.h"
@@ -15,6 +16,7 @@
 #include "LocaleES.h"
 #include "AudioManager.h"
 #include <SDL_events.h>
+#include <SDL_timer.h>
 #include "ThemeData.h"
 #include <mutex>
 #include "components/AsyncNotificationComponent.h"
@@ -187,6 +189,7 @@ void Window::reactivateGui()
 
 void Window::deinit(bool deinitRenderer)
 {
+	mBackgroundStatusRefresh.reset();
 	resetMenuBackgroundShader();
 
 	for (auto extra : mScreenExtras)
@@ -525,6 +528,16 @@ void Window::update(int deltaTime)
 	if (peekGui())
 		peekGui()->update(deltaTime);
 
+	const bool coveredAwakeScreen = mGuiStack.size() > 1 && !mSleeping && !mRenderScreenSaver &&
+		(!mScreenSaver || !mScreenSaver->isScreenSaverActive());
+	const void* coveredRoot = mGuiStack.empty() ? nullptr : mGuiStack.front();
+	if (mBackgroundStatusRefresh.observe(coveredAwakeScreen, coveredRoot, SDL_GetTicks()))
+	{
+		auto root = mGuiStack.empty() ? nullptr : mGuiStack.front();
+		if (root != nullptr && root->refreshBackgroundStatus())
+			resetMenuBackgroundShader();
+	}
+
 	// Update the screensaver
 	if (mScreenSaver)
 		mScreenSaver->update(deltaTime);
@@ -685,7 +698,15 @@ void Window::render()
 
 		// Don't render bottom if we have a MenuBackgroundShaderTextureCache
 		if (mMenuBackgroundShaderTextureCache == -1)
-			bottom->render(transform);
+		{
+			if (bottom != top)
+			{
+				CoveredSceneRenderScope coveredScene;
+				bottom->render(transform);
+			}
+			else
+				bottom->render(transform);
+		}
 
 		if (bottom != top)
 		{
@@ -1063,16 +1084,19 @@ void Window::setHelpPrompts(const std::vector<HelpPrompt>& prompts, const HelpSt
 
 void Window::onSleep()
 {
+	mBackgroundStatusRefresh.reset();
 	Scripting::fireEvent("sleep");
 }
 
 void Window::onWake()
 {
+	mBackgroundStatusRefresh.reset();
 	Scripting::fireEvent("wake");
 }
 
 void Window::startScreenSaver()
 {
+	mBackgroundStatusRefresh.reset();
 	if (mScreenSaver && !mRenderScreenSaver)
 	{
 		for (auto extra : mScreenExtras)
@@ -1089,6 +1113,7 @@ void Window::startScreenSaver()
 
 bool Window::cancelScreenSaver()
 {
+	mBackgroundStatusRefresh.reset();
 	bool ret = false;
 
 	mTimeSinceLastInput = 0;
@@ -1118,6 +1143,15 @@ bool Window::cancelScreenSaver()
 	}
 
 	return ret;
+}
+
+int Window::getBackgroundStatusRefreshTimeout(uint32_t now) const
+{
+	if (mGuiStack.size() < 2 || mSleeping || mRenderScreenSaver ||
+		(mScreenSaver && mScreenSaver->isScreenSaverActive()))
+		return -1;
+
+	return mBackgroundStatusRefresh.getTimeout(now);
 }
 
 void Window::renderScreenSaver()

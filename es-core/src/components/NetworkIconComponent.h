@@ -6,6 +6,7 @@
 #include "GuiComponent.h"
 #include "components/ImageComponent.h"
 #include "watchers/WatchersManager.h"
+#include "watchers/NetworkStateWatcher.h"
 
 class Window;
 
@@ -23,9 +24,9 @@ public:
 	void OnWatcherChanged(IWatcher* component) override;
 	
 private:
-	bool mConnected;
-	bool mPlaneMode;
-	bool mDirty;
+	bool refreshStatus() override;
+	bool updateNetworkStatus(bool resolveImage);
+	StatusComponents::LatestReading<NetworkStateWatcher::State> mNetworkInfo;
 	
 	std::string mNetworkIcon;
 	std::string mPlanemodeIcon;

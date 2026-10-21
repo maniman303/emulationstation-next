@@ -7,6 +7,7 @@
 #include "resources/Font.h"
 #include "utils/Platform.h"
 #include "watchers/WatchersManager.h"
+#include "watchers/NetworkStateWatcher.h"
 
 class TextureResource;
 
@@ -105,16 +106,14 @@ protected:
 	// Network info
 	std::shared_ptr<TextureResource> mNetworkImage;	
     std::shared_ptr<TextureResource> mPlanemodeImage;
-	bool mNetworkConnected;
-  	bool mPlanemodeEnabled;
+	StatusComponents::LatestReading<NetworkStateWatcher::State> mNetworkInfo;
 
 protected:
 	// Battery info
 	int mBatteryTextX;
 
 	Utils::Platform::BatteryInformation mBatteryInfo;
-	Utils::Platform::BatteryInformation mWatchedBatteryInfo;
-	bool mBatteryInfoChanged;
+	StatusComponents::LatestReading<Utils::Platform::BatteryInformation> mWatchedBatteryInfo;
 
 	std::shared_ptr<TextureResource> mBatteryImage;
 	std::shared_ptr<Font>			 mBatteryFont;

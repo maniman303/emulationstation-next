@@ -7,6 +7,7 @@
 #include "components/TextComponent.h"
 #include "utils/Platform.h"
 #include "watchers/WatchersManager.h"
+#include "StatusComponentState.h"
 
 class Window;
 
@@ -23,8 +24,9 @@ public:
 	void OnWatcherChanged(IWatcher* component) override;
 
 private:
-	Utils::Platform::BatteryInformation mBatteryInfo;
-	bool mDirty;
+	bool refreshStatus() override;
+	bool updateBatteryStatus();
+	StatusComponents::LatestReading<Utils::Platform::BatteryInformation> mBatteryInfo;
 };
 
 #endif // ES_CORE_COMPONENTS_BATTTEXT_COMPONENT_H

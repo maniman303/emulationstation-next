@@ -2,11 +2,12 @@
 
 #include "WatchersManager.h"
 #include "utils/Platform.h"
+#include "StatusComponentState.h"
 
 class BatteryLevelWatcher : public IWatcher
 {
 public:
-	Utils::Platform::BatteryInformation& getBatteryInfo() { return mBatteryInfo; }
+	Utils::Platform::BatteryInformation getBatteryInfo() const { return mBatteryInfo.get(); }
 
 protected:
 	bool enabled() override { return true; };
@@ -17,5 +18,5 @@ protected:
 	bool check() override;
 
 private:
-	Utils::Platform::BatteryInformation mBatteryInfo;	
+	StatusComponents::LatestReading<Utils::Platform::BatteryInformation> mBatteryInfo;
 };

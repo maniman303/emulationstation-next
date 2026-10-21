@@ -3,7 +3,8 @@
 bool BatteryLevelWatcher::check()
 {
 	auto batteryInfo = Utils::Platform::queryBatteryInformation();
-	bool changed = batteryInfo.hasBattery != mBatteryInfo.hasBattery || batteryInfo.isCharging != mBatteryInfo.isCharging || batteryInfo.level != mBatteryInfo.level;
-	mBatteryInfo = batteryInfo;
+	const auto previous = mBatteryInfo.get();
+	bool changed = batteryInfo.hasBattery != previous.hasBattery || batteryInfo.isCharging != previous.isCharging || batteryInfo.level != previous.level;
+	mBatteryInfo.set(batteryInfo);
 	return changed;
 }

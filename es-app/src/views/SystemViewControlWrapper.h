@@ -86,9 +86,11 @@ public:
 	float getZIndex() const { return mComp->getZIndex(); }
 	bool input(InputConfig* config, Input input) { return mComp->input(config, input); }
 	void update(int deltaTime) { mComp->update(deltaTime); }
+	bool refreshBackgroundStatus() { return mComp != nullptr && mComp->refreshBackgroundStatus(); }
 	void render(const Transform4x4f& parentTrans) { mComp->render(parentTrans); }
 	void onShow() { mComp->onShow(); }
 	void onHide() { mComp->onHide(); }
+	void topWindow(bool isTop) { if (mComp) mComp->topWindow(isTop); }
 	bool onMouseClick(int button, bool pressed, int x, int y) { return mComp->onMouseClick(button, pressed, x, y); }
 	void onMouseMove(int x, int y) { mComp->onMouseMove(x, y); }
 	bool onMouseWheel(int delta) { return mComp->onMouseWheel(delta); }

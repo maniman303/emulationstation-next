@@ -11,6 +11,7 @@ public:
 
 	bool isShortPressed(InputConfig* config, Input input);
 	bool isLongPressed(int deltaTime);
+	void cancel();
 
 private:
 	std::string mButtonName;

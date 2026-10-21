@@ -729,7 +729,13 @@ int main(int argc, char* argv[])
 		if (screenSaverWait)
 			eventResult = SDL_WaitEventTimeout(&event, screenSaverTimeout);
 		else if (ps_standby)
-			eventResult = SDL_WaitEventTimeout(&event, PowerSaver::getTimeout());
+		{
+			int timeout = PowerSaver::getTimeout();
+			int statusTimeout = window.getBackgroundStatusRefreshTimeout(SDL_GetTicks());
+			if (statusTimeout >= 0 && (timeout < 0 || statusTimeout < timeout))
+				timeout = statusTimeout;
+			eventResult = SDL_WaitEventTimeout(&event, timeout);
+		}
 		else
 			eventResult = SDL_PollEvent(&event);
 

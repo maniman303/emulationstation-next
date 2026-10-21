@@ -15,7 +15,7 @@
 
 #define PLAYER_PAD_TIME_MS		 150
 
-ControllerActivityComponent::ControllerActivityComponent(Window* window) : GuiComponent(window), mBatteryInfoChanged(false), mBatteryTextX(0), mNetworkConnected(false), mPlanemodeEnabled(false)
+ControllerActivityComponent::ControllerActivityComponent(Window* window) : GuiComponent(window), mBatteryTextX(0)
 {
 	WatchersManager::getInstance()->RegisterNotify(this);
 	init();
@@ -31,15 +31,13 @@ void ControllerActivityComponent::OnWatcherChanged(IWatcher* component)
 	BatteryLevelWatcher* batteryWatcher = dynamic_cast<BatteryLevelWatcher*>(component);
 	if (batteryWatcher != nullptr)
 	{
-		mWatchedBatteryInfo = batteryWatcher->getBatteryInfo();
-		mBatteryInfoChanged = true;
+		mWatchedBatteryInfo.set(batteryWatcher->getBatteryInfo());
 	}
 
 	NetworkStateWatcher* networkWatcher = dynamic_cast<NetworkStateWatcher*>(component);
 	if (networkWatcher != nullptr)
 	{
-		mNetworkConnected = networkWatcher->isConnected();
-		mPlanemodeEnabled = networkWatcher->isPlaneMode();
+		mNetworkInfo.set(networkWatcher->getStatus());
 	}
 }
 
@@ -70,22 +68,15 @@ void ControllerActivityComponent::init()
 	for (int i = 0; i < MAX_PLAYERS; i++)
 		mPads[i].reset();
 	
-	mNetworkConnected = false;
-	mPlanemodeEnabled = false;
-
 	NetworkStateWatcher* networkWatcher = WatchersManager::GetComponent<NetworkStateWatcher>();
 	if (networkWatcher != nullptr)
 	{
-		mNetworkConnected = networkWatcher->isConnected();
-		mPlanemodeEnabled = networkWatcher->isPlaneMode();
+		mNetworkInfo.setInitial(networkWatcher->getStatus());
 	}
-
-	mWatchedBatteryInfo = Utils::Platform::BatteryInformation();
-	mBatteryInfoChanged = true;
 
 	BatteryLevelWatcher* batteryWatcher = WatchersManager::GetComponent<BatteryLevelWatcher>();
 	if (batteryWatcher != nullptr)
-		mWatchedBatteryInfo = batteryWatcher->getBatteryInfo();
+		mWatchedBatteryInfo.setInitial(batteryWatcher->getBatteryInfo());
 
 	updateBatteryInfo();
 }
@@ -161,8 +152,7 @@ void ControllerActivityComponent::update(int deltaTime)
 {
 	GuiComponent::update(deltaTime);
 
-	if (mBatteryInfoChanged)
-		updateBatteryInfo();
+	updateBatteryInfo();
 	
 	if (mView & CONTROLLERS)
 	{
@@ -207,6 +197,7 @@ void ControllerActivityComponent::render(const Transform4x4f& parentTrans)
 
 	bool showControllerActivity = Settings::ShowControllerActivity();
 	bool showControllerBattery = showControllerActivity && Settings::ShowControllerBattery();
+	const auto networkInfo = mNetworkInfo.get();
 
 	if ((mView & CONTROLLERS) && showControllerActivity)
 	{	
@@ -264,9 +255,9 @@ void ControllerActivityComponent::render(const Transform4x4f& parentTrans)
 
 	if (Settings::ShowNetworkIndicator())
 	{
-		if ((mView & PLANEMODE) && mPlanemodeEnabled && mPlanemodeImage != nullptr)
+		if ((mView & PLANEMODE) && networkInfo.planeMode && mPlanemodeImage != nullptr)
 			itemsWidth += szW + mSpacing; // getTextureSize(mPlanemodeImage).x()
-		else if ((mView & NETWORK) && mNetworkConnected && mNetworkImage != nullptr)
+		else if ((mView & NETWORK) && networkInfo.connected && mNetworkImage != nullptr)
 			itemsWidth += szW + mSpacing; // getTextureSize(mNetworkImage).x()
 	}
 
@@ -359,9 +350,9 @@ void ControllerActivityComponent::render(const Transform4x4f& parentTrans)
 	
 	if (Settings::ShowNetworkIndicator())
 	{
-		if ((mView & PLANEMODE) && mPlanemodeEnabled && mPlanemodeImage != nullptr)
+		if ((mView & PLANEMODE) && networkInfo.planeMode && mPlanemodeImage != nullptr)
 			x += renderTexture(x, szW, mPlanemodeImage, mColorShift);
-		else if ((mView & NETWORK) && mNetworkConnected && mNetworkImage != nullptr)
+		else if ((mView & NETWORK) && networkInfo.connected && mNetworkImage != nullptr)
 			x += renderTexture(x, szW, mNetworkImage, mColorShift);
 	}
 
@@ -493,15 +484,13 @@ void ControllerActivityComponent::applyTheme(const std::shared_ptr<ThemeData>& t
 
 void ControllerActivityComponent::updateBatteryInfo()
 {
-	mBatteryInfoChanged = false;
-
 	if ((mView & BATTERY) == 0)
 	{
 		mBatteryInfo.hasBattery = false;
 		return;
 	}
 
-	auto info = mWatchedBatteryInfo;
+	auto info = mWatchedBatteryInfo.get();
 	if (info.hasBattery == mBatteryInfo.hasBattery && info.isCharging == mBatteryInfo.isCharging && info.level == mBatteryInfo.level)
 		return;
 

@@ -51,3 +51,9 @@ bool MultiStateInput::isLongPressed(int deltaTime)
 
 	return false;
 }
+
+void MultiStateInput::cancel()
+{
+	mTimeHoldingButton = 0;
+	mIsPressed = false;
+}

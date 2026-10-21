@@ -7,6 +7,7 @@
 #include "Settings.h"
 #include "math/Vector2f.h"
 #include "math/Vector2i.h"
+#include "BackgroundStatusRefresh.h"
 #include <memory>
 #include <functional>
 
@@ -60,6 +61,7 @@ public:
 	void input(InputConfig* config, Input input);
 	void update(int deltaTime);
 	void render();
+	int getBackgroundStatusRefreshTimeout(uint32_t now) const;
 
 	bool init(bool initRenderer = true, bool initInputManager = true);
 	void deinit(bool deinitRenderer = true);
@@ -188,6 +190,7 @@ private:
 	void renderMenuBackgroundShader();
 	void resetMenuBackgroundShader();
 	unsigned int mMenuBackgroundShaderTextureCache;
+	BackgroundStatusRefresh mBackgroundStatusRefresh;
 
 	std::function<void()> mReloadGamelistsCallback;
 };

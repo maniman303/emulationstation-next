@@ -7,6 +7,9 @@ set(CORE_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BindingManager.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/CECInput.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GuiComponent.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/StatusComponentState.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/BackgroundStatusRefresh.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CoveredSceneRenderScope.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/HelpStyle.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/HttpReq.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ImageIO.h
@@ -145,6 +148,8 @@ set(CORE_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/BindingManager.cpp	
 	${CMAKE_CURRENT_SOURCE_DIR}/src/CECInput.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GuiComponent.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/BackgroundStatusRefresh.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CoveredSceneRenderScope.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/HelpStyle.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/HttpReq.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ImageIO.cpp

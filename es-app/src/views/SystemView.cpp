@@ -1432,6 +1432,20 @@ void SystemView::getCarouselFromTheme(const ThemeData::ThemeElement* elem)
 		mSystemInfoCountOnly = elem->get<bool>("systemInfoCountOnly");
 }
 
+bool SystemView::refreshBackgroundStatus()
+{
+	bool changed = refreshStatus();
+	changed = mCarousel.refreshBackgroundStatus() || changed;
+	changed = mSystemInfo.refreshBackgroundStatus() || changed;
+	changed = GuiComponent::refreshBackgroundStatus() || changed;
+	for (auto background : mStaticBackgrounds)
+		changed = background->refreshBackgroundStatus() || changed;
+	for (auto& entry : mEntries)
+		for (auto extra : entry.backgroundExtras)
+			changed = extra->refreshBackgroundStatus() || changed;
+	return changed;
+}
+
 void SystemView::onShow()
 {
 	GuiComponent::onShow();
@@ -1479,6 +1493,10 @@ void SystemView::onScreenSaverDeactivate()
 
 void SystemView::topWindow(bool isTop)
 {
+	GuiComponent::topWindow(isTop);
+	mCarousel.topWindow(isTop);
+	if (!isTop)
+		mYButton.cancel();
 	mDisable = !isTop;
 	updateExtras([this, isTop](GuiComponent* p) { p->topWindow(isTop); });
 

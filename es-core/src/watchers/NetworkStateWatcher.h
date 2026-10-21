@@ -1,14 +1,22 @@
 #pragma once
 
 #include "WatchersManager.h"
+#include "StatusComponentState.h"
 
 class NetworkStateWatcher : public IWatcher
 {
 public:
+	struct State
+	{
+		bool connected = false;
+		bool planeMode = false;
+	};
+
 	NetworkStateWatcher();
 
-	bool isConnected() { return mIsConnected; }
-	bool isPlaneMode() { return mIsPlaneMode; }
+	State getStatus() const { return mState.get(); }
+	bool isConnected() const { return getStatus().connected; }
+	bool isPlaneMode() const { return getStatus().planeMode; }
 
 protected:
 	bool enabled() override { return true; };
@@ -19,7 +27,6 @@ protected:
 	bool check() override;
 
 private:
-	bool mIsConnected;
-	bool mIsPlaneMode;
+	StatusComponents::LatestReading<State> mState;
 	bool mIsPlaneModeSupported;
 };

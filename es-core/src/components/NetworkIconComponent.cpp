@@ -2,20 +2,17 @@
 #include "Settings.h"
 #include "utils/Platform.h"
 #include "IExternalActivity.h"
-
 #include "watchers/NetworkStateWatcher.h"
 
-NetworkIconComponent::NetworkIconComponent(Window* window) : ImageComponent(window), mConnected(false), mPlaneMode(false), mDirty(true)
-{	
+NetworkIconComponent::NetworkIconComponent(Window* window) : ImageComponent(window)
+{
 	setVisible(false);
 
 	WatchersManager::getInstance()->RegisterNotify(this);
-
 	NetworkStateWatcher* watcher = WatchersManager::GetComponent<NetworkStateWatcher>();
 	if (watcher != nullptr)
 	{
-		mConnected = watcher->isConnected();
-		mPlaneMode = watcher->isPlaneMode();
+		mNetworkInfo.setInitial(watcher->getStatus());
 	}
 }
 
@@ -29,35 +26,31 @@ void NetworkIconComponent::OnWatcherChanged(IWatcher* component)
 	NetworkStateWatcher* watcher = dynamic_cast<NetworkStateWatcher*>(component);
 	if (watcher != nullptr)
 	{
-		mConnected = watcher->isConnected();
-		mPlaneMode = watcher->isPlaneMode();
-		mDirty = true;
-	}	
+		mNetworkInfo.set(watcher->getStatus());
+	}
 }
 
 void NetworkIconComponent::update(int deltaTime)
 {
 	ImageComponent::update(deltaTime);
+	updateNetworkStatus(false);
+}
 
-	if (mDirty)
-	{		
-		bool networkConnected = Settings::ShowNetworkIndicator() && mConnected;
-		bool planemodeEnabled = Settings::ShowNetworkIndicator() && mPlaneMode;
+bool NetworkIconComponent::refreshStatus()
+{
+	return updateNetworkStatus(true);
+}
 
-		setVisible(networkConnected || planemodeEnabled);
-
-		if (networkConnected || planemodeEnabled)
-		{
-			std::string txName = mNetworkIcon;
-
-			if (planemodeEnabled && !mPlanemodeIcon.empty())
-				txName = mPlanemodeIcon;
-
-			setImage(txName);
-		}
-
-		mDirty = false;
-	}
+bool NetworkIconComponent::updateNetworkStatus(bool resolveImage)
+{
+	return StatusComponents::refreshPresentation(*this, [this, resolveImage]()
+	{
+		const auto info = mNetworkInfo.get();
+		setVisible(Settings::ShowNetworkIndicator() && (info.connected || info.planeMode));
+		if (isVisible())
+			setImage(info.planeMode && !mPlanemodeIcon.empty() ? mPlanemodeIcon : mNetworkIcon);
+		return resolveImage && refreshBackgroundImage();
+	});
 }
 
 void NetworkIconComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, const std::string& view, const std::string& element, unsigned int properties)
@@ -76,4 +69,3 @@ void NetworkIconComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, c
 	if (elem->has("planemodeIcon") && ResourceManager::getInstance()->fileExists(elem->get<std::string>("planemodeIcon")))
 		mPlanemodeIcon = elem->get<std::string>("planemodeIcon");
 }
-

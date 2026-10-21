@@ -134,6 +134,19 @@ public:
 		if (mScrollVelocity != 0 && mScrollTier > 0)
 			stopScrolling();
 	}
+
+	void topWindow(bool isTop) override
+	{
+		GuiComponent::topWindow(isTop);
+		if (!isTop)
+		{
+			mScrollVelocity = 0;
+			mScrollTier = 0;
+			mScrollTierAccumulator = 0;
+			mScrollCursorAccumulator = 0;
+			PowerSaver::lock(true);
+		}
+	}
 	
 	void setCursorIndex(int index, bool force = false)
 	{

@@ -1,4 +1,5 @@
 #include "WebImageComponent.h"
+#include "CoveredSceneRenderScope.h"
 #include "utils/StringUtil.h"
 #include "HttpReq.h"
 #include "utils/ZipFile.h"
@@ -210,7 +211,7 @@ void WebImageComponent::render(const Transform4x4f& parentTrans)
 		mSize.y() + 2 * yClipMargin))
 		return;
 
-	if (mRequest == nullptr && !mUrlToLoad.empty() && !mLocalFile.empty())
+	if (!CoveredSceneRenderScope::isActive() && mRequest == nullptr && !mUrlToLoad.empty() && !mLocalFile.empty())
 	{
 		std::string localPath = Utils::FileSystem::getParent(mLocalFile);
 		if (!Utils::FileSystem::exists(localPath))
@@ -227,7 +228,7 @@ void WebImageComponent::render(const Transform4x4f& parentTrans)
 		mBusyAnim->setSize(mSize);
 	}
 	
-	if (mRequest == nullptr && mWaitLoaded && mOnLoaded != nullptr && mLoadingTexture == nullptr && mTexture && mTexture->bind())
+	if (!CoveredSceneRenderScope::isActive() && mRequest == nullptr && mWaitLoaded && mOnLoaded != nullptr && mLoadingTexture == nullptr && mTexture && mTexture->bind())
 	{
 		resize();
 		mOnLoaded();

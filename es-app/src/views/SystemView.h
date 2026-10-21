@@ -52,6 +52,7 @@ public:
 
 	virtual bool input(InputConfig* config, Input input) override;
 	virtual void update(int deltaTime) override;
+	virtual bool refreshBackgroundStatus() override;
 	virtual void render(const Transform4x4f& parentTrans) override;
 
 	// Help

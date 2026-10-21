@@ -31,6 +31,7 @@ public:
 	virtual void resetLastCursor() = 0;
 
 	virtual void update(int deltaTime) override;
+	virtual void topWindow(bool isTop) override;
 	virtual bool input(InputConfig* config, Input input) override;
 	virtual void launch(FileData* game) = 0;
 	

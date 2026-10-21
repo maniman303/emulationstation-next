@@ -1,4 +1,5 @@
 #include "components/VideoVlcComponent.h"
+#include "CoveredSceneRenderScope.h"
 
 #include "renderers/Renderer.h"
 #include "resources/TextureResource.h"
@@ -435,7 +436,7 @@ void VideoVlcComponent::render(const Transform4x4f& parentTrans)
 
 	VideoComponent::render(parentTrans);
 
-	bool initFromPixels = true;
+	bool initFromPixels = !CoveredSceneRenderScope::isActive();
 
 	if (!mIsPlaying || !mContext || mIsParsing)
 	{

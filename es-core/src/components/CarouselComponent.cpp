@@ -711,6 +711,7 @@ void CarouselComponent::onScreenSaverDeactivate()
 
 void CarouselComponent::topWindow(bool isTop)
 {
+	IList<CarouselComponentData, IBindable*>::topWindow(isTop);
 	mDisable = !isTop;
 }
 

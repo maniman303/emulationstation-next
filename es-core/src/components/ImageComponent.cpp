@@ -1,4 +1,5 @@
 #include "components/ImageComponent.h"
+#include "CoveredSceneRenderScope.h"
 
 #include "resources/TextureResource.h"
 #include "Log.h"
@@ -623,7 +624,8 @@ void ImageComponent::render(const Transform4x4f& parentTrans)
 	if (!mVisible)
 		return;
 
-	watchTextureLoading(); // Required when hosted in a grid/list
+	if (!CoveredSceneRenderScope::isActive())
+		watchTextureLoading(); // Required when hosted in a grid/list
 
 	if (!mTextureLoaded && mTexture && !mTexture->isLoaded())
 	{
@@ -671,7 +673,8 @@ void ImageComponent::render(const Transform4x4f& parentTrans)
 		// when it finally loads
 		if (!mTexture->bind())
 		{
-			fadeIn(false);
+			if (!CoveredSceneRenderScope::isActive())
+				fadeIn(false);
 			return;
 		}
 
@@ -690,7 +693,8 @@ void ImageComponent::render(const Transform4x4f& parentTrans)
 
 		Renderer::setMatrix(trans);
 
-		fadeIn(true);
+		if (!CoveredSceneRenderScope::isActive())
+			fadeIn(true);
 
 		mVertices->saturation = mSaturation;
 		mVertices->customShader = !mCustomShaderEnabled || mCustomShader.path.empty() ? nullptr : &mCustomShader;
@@ -794,6 +798,20 @@ bool ImageComponent::watchTextureLoading()
 	}
 
 	return false;
+}
+
+bool ImageComponent::refreshBackgroundImage()
+{
+	bool changed = watchTextureLoading();
+	if (mTextureLoaded && mFading)
+	{
+		mFading = false;
+		mFadeOpacity = 255;
+		updateColors();
+		changed = true;
+	}
+
+	return changed;
 }
 
 void ImageComponent::fadeIn(bool textureLoaded)

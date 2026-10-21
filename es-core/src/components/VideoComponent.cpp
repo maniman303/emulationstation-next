@@ -1,4 +1,5 @@
 #include "components/VideoComponent.h"
+#include "CoveredSceneRenderScope.h"
 
 #include "resources/ResourceManager.h"
 #include "utils/FileSystemUtil.h"
@@ -202,11 +203,12 @@ void VideoComponent::render(const Transform4x4f& parentTrans)
 	}
 
 	// Handle the case where the video is delayed
-	if (!GuiComponent::isLaunchTransitionRunning)
+	if (!CoveredSceneRenderScope::isActive() && !GuiComponent::isLaunchTransitionRunning)
 		handleStartDelay();
 
 	// Handle looping of the video
-	handleLooping();
+	if (!CoveredSceneRenderScope::isActive())
+		handleLooping();
 }
 
 void VideoComponent::renderSnapshot(const Transform4x4f& parentTrans)

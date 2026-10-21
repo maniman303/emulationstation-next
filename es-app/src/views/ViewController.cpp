@@ -1,4 +1,5 @@
 #include "views/ViewController.h"
+#include "CoveredSceneRenderScope.h"
 
 #include "animations/Animation.h"
 #include "animations/LambdaAnimation.h"
@@ -941,7 +942,7 @@ void ViewController::update(int deltaTime)
 	if (mCurrentView)
 		mCurrentView->update(deltaTime);
 
-	if (mWaitForGameReturn)
+	if (mWaitForGameReturn && !CoveredSceneRenderScope::isActive())
 	{
 		// Keep the return effect covered while the restored view loads its textures.
 		// Discard loading time until complete frames (including swaps) run smoothly.
@@ -961,6 +962,14 @@ void ViewController::update(int deltaTime)
 
 		playViewTransition(false); 
 	}
+}
+
+bool ViewController::refreshBackgroundStatus()
+{
+	bool changed = refreshStatus();
+	if (mCurrentView != nullptr)
+		changed = mCurrentView->refreshBackgroundStatus() || changed;
+	return changed;
 }
 
 void ViewController::render(const Transform4x4f& parentTrans)

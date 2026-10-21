@@ -103,6 +103,18 @@ void ISimpleGameListView::onThemeChanged(const std::shared_ptr<ThemeData>& theme
 	}
 }
 
+void ISimpleGameListView::topWindow(bool isTop)
+{
+	GuiComponent::topWindow(isTop);
+	if (!isTop)
+	{
+		mOKButton.cancel();
+		mXButton.cancel();
+		mYButton.cancel();
+		mSelectButton.cancel();
+	}
+}
+
 void ISimpleGameListView::onFileChanged(FileData* /*file*/, FileChangeType /*change*/)
 {
 	// we could be tricky here to be efficient;

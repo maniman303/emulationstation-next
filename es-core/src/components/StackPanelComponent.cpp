@@ -85,14 +85,41 @@ void StackPanelComponent::onSizeChanged()
 	performLayout();
 }
 
-void StackPanelComponent::performLayout()
+bool StackPanelComponent::refreshBackgroundStatus()
+{
+	std::vector<std::pair<bool, Vector2f>> before;
+	before.reserve(mChildren.size());
+	for (auto child : mChildren)
+		before.emplace_back(child->isVisible(), child->getSize());
+
+	const bool changed = GuiComponent::refreshBackgroundStatus();
+	bool layoutChanged = false;
+	Vector2f visibleSize;
+	for (size_t i = 0; i < mChildren.size(); ++i)
+	{
+		auto child = mChildren[i];
+		layoutChanged |= before[i].first != child->isVisible() ||
+			(child->isVisible() && before[i].second != child->getSize());
+		if (child->isVisible())
+			visibleSize += child->getSize();
+	}
+	if (layoutChanged)
+		performLayout(false);
+	mLastSize = visibleSize;
+	return changed || layoutChanged;
+}
+
+void StackPanelComponent::performLayout(bool resizeChildren)
 {
 	int pos = 0;
 
 	if (mReverse)
 		pos = mHorizontal ? mSize.x() : mSize.y();
 
-	recalcChildrenLayout();
+	// Covered status changes only repack the presented children. Reapplying
+	// theme bounds or resizing them would disturb unrelated paused geometry.
+	if (resizeChildren)
+		recalcChildrenLayout();
 
 	bool aligned = false;
 
@@ -129,18 +156,21 @@ void StackPanelComponent::performLayout()
 				}
 			}
 
-			if (image != nullptr && maxSize)
-				image->setMaxSize(child->getSize().x(), mSize.y());
-			else if (text != nullptr) 
-			{				
-				child->setSize(0, mSize.y());
-				child->setSize(Math::min(sz, child->getSize().x()), mSize.y());
+			if (resizeChildren)
+			{
+				if (image != nullptr && maxSize)
+					image->setMaxSize(child->getSize().x(), mSize.y());
+				else if (text != nullptr)
+				{
+					child->setSize(0, mSize.y());
+					child->setSize(Math::min(sz, child->getSize().x()), mSize.y());
 
-				if (wasAligned && child->getSize().x() < sz)
-					wasAligned = false;
+					if (wasAligned && child->getSize().x() < sz)
+						wasAligned = false;
+				}
+				else if (child->getSize() != Vector2f(sz, mSize.y()))
+					child->setSize(sz, mSize.y());
 			}
-			else if (child->getSize() != Vector2f(sz, mSize.y()))
-				child->setSize(sz, mSize.y());
 
 			aligned |= wasAligned;
 
@@ -148,7 +178,7 @@ void StackPanelComponent::performLayout()
 			{
 				auto childpos = pos - child->getSize().x() + child->getSize().x() * child->getOrigin().x();
 
-				if (image != nullptr && maxSize)
+				if (resizeChildren && image != nullptr && maxSize)
 					child->setPosition(childpos, child->getPosition().y() - child->getSize().y() * child->getOrigin().y() + mSize.y() * child->getOrigin().y());
 				else
 					child->setPosition(childpos, child->getPosition().y());
@@ -160,7 +190,7 @@ void StackPanelComponent::performLayout()
 			{
 				auto childpos = pos + child->getSize().x() * child->getOrigin().x();
 
-				if (image != nullptr && maxSize)
+				if (resizeChildren && image != nullptr && maxSize)
 					child->setPosition(childpos, child->getPosition().y() - child->getSize().y() * child->getOrigin().y() + mSize.y() * child->getOrigin().y());
 				else 
 					child->setPosition(childpos, child->getPosition().y());
@@ -171,16 +201,19 @@ void StackPanelComponent::performLayout()
 		}
 		else
 		{
-			if (image != nullptr && maxSize)
-				image->setMaxSize(mSize.x(), child->getSize().y());
-			else if (child->getSize() != Vector2f(mSize.x(), child->getSize().y()))
-				child->setSize(mSize.x(), child->getSize().y());
+			if (resizeChildren)
+			{
+				if (image != nullptr && maxSize)
+					image->setMaxSize(mSize.x(), child->getSize().y());
+				else if (child->getSize() != Vector2f(mSize.x(), child->getSize().y()))
+					child->setSize(mSize.x(), child->getSize().y());
+			}
 
 			if (mReverse)
 			{
 				auto childpos = pos - child->getSize().y() + child->getSize().y() * child->getOrigin().y();
 
-				if (image != nullptr && maxSize)
+				if (resizeChildren && image != nullptr && maxSize)
 					child->setPosition(child->getPosition().x() - child->getSize().x() * child->getOrigin().x() + mSize.y() * child->getOrigin().x(), childpos);
 				else
 					child->setPosition(child->getPosition().x(), childpos);
@@ -193,7 +226,7 @@ void StackPanelComponent::performLayout()
 			{
 				auto childpos = pos + child->getSize().y() * child->getOrigin().y();
 
-				if (image != nullptr && maxSize)
+				if (resizeChildren && image != nullptr && maxSize)
 					child->setPosition(child->getPosition().x() - child->getSize().x() * child->getOrigin().x() + mSize.x() * child->getOrigin().x(), childpos);
 				else
 					child->setPosition(child->getPosition().x(), childpos);

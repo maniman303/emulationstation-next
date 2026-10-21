@@ -2,7 +2,7 @@
 #include "components/IExternalActivity.h"
 #include "utils/Platform.h"
 
-NetworkStateWatcher::NetworkStateWatcher() : mIsConnected(false), mIsPlaneMode(false)
+NetworkStateWatcher::NetworkStateWatcher()
 {
 	mIsPlaneModeSupported = IExternalActivity::Instance != nullptr && IExternalActivity::Instance->isReadPlaneModeSupported();
 }
@@ -12,10 +12,9 @@ bool NetworkStateWatcher::check()
 	bool networkConnected = !Utils::Platform::queryIPAddress().empty();
 	bool planemodeEnabled = mIsPlaneModeSupported && IExternalActivity::Instance != nullptr && IExternalActivity::Instance->isPlaneMode();
 
-	bool changed = networkConnected != mIsConnected || mIsPlaneMode != planemodeEnabled;
-
-	mIsConnected = networkConnected;
-	mIsPlaneMode = planemodeEnabled;
+	const auto previous = mState.get();
+	bool changed = networkConnected != previous.connected || previous.planeMode != planemodeEnabled;
+	mState.set(State{networkConnected, planemodeEnabled});
 	
 	return changed;
 }
