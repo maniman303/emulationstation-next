@@ -1339,6 +1339,45 @@ std::vector<HelpPrompt> ViewController::getHelpPrompts()
 	if (!UIModeController::getInstance()->isUIModeKid())
 		prompts.push_back(HelpPrompt("start", _("MENU"), [&] { mWindow->pushGui(new GuiMenu(mWindow)); }));
 
+	std::vector<std::string> order;
+	if (mState.viewing == GAME_LIST)
+		order = { "select", "start", "y", "x", BUTTON_BACK, BUTTON_OK };
+	else if (mState.viewing == SYSTEM_SELECT)
+	{
+		const bool hasRandom = std::any_of(prompts.cbegin(), prompts.cend(), [](const HelpPrompt& prompt) {
+			return prompt.first == "x" && prompt.second == _("RANDOM");
+		});
+		const bool hasSystemsList = std::any_of(prompts.cbegin(), prompts.cend(), [](const HelpPrompt& prompt) {
+			return prompt.first == "b" && prompt.second == _("SYSTEMS LIST");
+		});
+		if (hasRandom && hasSystemsList)
+		{
+			// Preserve the default help order, swapping only Random and Systems List.
+			order = { "select", "start", BUTTON_BACK, "r", "l", "y", "x", BUTTON_OK,
+				"left/right", "up/down", "up/down/left/right" };
+			for (auto& button : order)
+			{
+				if (button == "x") button = "b";
+				else if (button == "b") button = "x";
+			}
+		}
+	}
+
+	if (!order.empty())
+	{
+		for (auto& prompt : prompts)
+		{
+			for (size_t i = 0; i < order.size(); i++)
+			{
+				if (prompt.first == order[i])
+				{
+					prompt.sortOrder = static_cast<int>(i);
+					break;
+				}
+			}
+		}
+	}
+
 	return prompts;
 }
 

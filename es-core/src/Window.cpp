@@ -1054,6 +1054,13 @@ void Window::setHelpPrompts(const std::vector<HelpPrompt>& prompts, const HelpSt
 	// sort prompts so it goes [dpad_all] [dpad_u/d] [dpad_l/r] [a/b/x/y/l/r] [start/select]
 	std::sort(addPrompts.begin(), addPrompts.end(), [](const HelpPrompt& a, const HelpPrompt& b) -> bool {
 
+		if (a.sortOrder >= 0 || b.sortOrder >= 0)
+		{
+			if (a.sortOrder < 0) return false;
+			if (b.sortOrder < 0) return true;
+			return a.sortOrder < b.sortOrder;
+		}
+
 		static const char* map[] = {
 			"up/down/left/right",
 			"up/down",

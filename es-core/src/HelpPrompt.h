@@ -16,6 +16,9 @@ struct HelpPrompt
 		action = onclick;
 	}
 
+	// Non-negative values override the default help order for a specific screen.
+	int sortOrder = -1;
+
 	std::string first;
 	std::string second;	
 	

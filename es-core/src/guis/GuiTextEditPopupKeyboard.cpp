@@ -345,78 +345,99 @@ void GuiTextEditPopupKeyboard::onSizeChanged()
 
 bool GuiTextEditPopupKeyboard::input(InputConfig* config, Input input)
 {
-	const auto previousGridCursor = mGrid.getCursor();
-	const auto previousKeyCursor = mKeyboardGrid->getCursor();
-	const bool navigating = input.value != 0 && (config->isMappedLike("up", input) ||
-		config->isMappedLike("down", input) || config->isMappedLike("left", input) || config->isMappedLike("right", input));
-	if (GuiComponent::input(config, input))
+	// L3 is an optional, unadvertised alias for L1. Accept both saved mapping names.
+	if (config->isMappedTo("leftshoulder", input) || config->isMappedTo("pageup", input) ||
+		config->isMappedTo("leftthumb", input) || config->isMappedTo("l3", input))
 	{
-		if (navigating && mNavigationSound &&
-			(previousGridCursor != mGrid.getCursor() || previousKeyCursor != mKeyboardGrid->getCursor()))
-			mNavigationSound->play(0.8f);
+		if (input.value)
+			shiftKeys();
 		return true;
 	}
 
-	// pressing start
+	if (config->isMappedTo("rightshoulder", input) || config->isMappedTo("pagedown", input) ||
+		config->isMappedTo("select", input))
+		return true;
+
+	// Handle shortcuts before the focused text field or key can consume them.
+	if (config->getDeviceId() == DEVICE_KEYBOARD && input.id == SDLK_ESCAPE && input.value)
+	{
+		delete this;
+		return true;
+	}
+
 	if (config->isMappedTo("start", input) && input.value)
 	{
 		if (mOkCallback)
 			mOkCallback(mText->getValue());
-
 		delete this;
 		return true;
 	}
 
-	if ((config->getDeviceId() == DEVICE_KEYBOARD && input.id == SDLK_ESCAPE))
+	// Face mappings use Nintendo positions: X north, A east, B south, Y west.
+	// Keep physical keyboard Enter/Escape independent of controller shortcuts.
+	if (config->getDeviceId() != DEVICE_KEYBOARD)
 	{
-		delete this;
-		return true;
+		if (config->isMappedTo("x", input))
+		{
+			if (input.value)
+				delete this;
+			return true;
+		}
+
+		if (config->isMappedTo("y", input))
+		{
+			if (input.value)
+			{
+				const bool editing = mText->isEditing();
+				if (!editing)
+					mText->startEditing();
+				mText->textInput(" ");
+				if (!editing)
+					mText->stopEditing();
+			}
+			return true;
+		}
+
+		if (config->isMappedTo("b", input))
+		{
+			if (input.value)
+			{
+				const bool editing = mText->isEditing();
+				if (!editing)
+					mText->startEditing();
+				mText->textInput("\b");
+				if (!editing)
+					mText->stopEditing();
+			}
+			return true;
+		}
+
+		if (config->isMappedTo("a", input))
+		{
+			// The grid's keys and text field normally activate with BUTTON_OK.
+			// Translate only this event, leaving the user's global mapping intact.
+			Input selectInput;
+			if (config->getInputByName(BUTTON_OK, &selectInput))
+			{
+				selectInput.value = input.value;
+				return GuiComponent::input(config, selectInput);
+			}
+			return true;
+		}
 	}
 
-	// pressing back when not text editing closes us
-	if (config->isMappedTo(BUTTON_BACK, input) && input.value)
-	{
-		delete this;
-		return true;
-	}
+	const auto previousGridCursor = mGrid.getCursor();
+	const auto previousKeyCursor = mKeyboardGrid->getCursor();
+	const bool navigating = input.value != 0 && (config->isMappedLike("up", input) ||
+		config->isMappedLike("down", input) || config->isMappedLike("left", input) || config->isMappedLike("right", input));
+	if (!navigating)
+		return GuiComponent::input(config, input);
 
-	// For deleting a chara (Left Top Button)
-	if (config->isMappedTo("leftshoulder", input) && input.value) {
-		bool editing = mText->isEditing();
-		if (!editing)
-			mText->startEditing();
-
-		mText->textInput("\b");
-
-		if (!editing)
-			mText->stopEditing();
-	}
-
-	// For Adding a space (Right Top Button)
-	if (config->isMappedTo("rightshoulder", input) && input.value)
-	{
-		bool editing = mText->isEditing();
-		if (!editing)
-			mText->startEditing();
-
-		mText->textInput(" ");
-
-		if (!editing)
-			mText->stopEditing();
-	}
-
-	// For Shifting (Y)
-	if (config->isMappedTo("y", input) && input.value) 
-		shiftKeys();
-
-	if (config->isMappedTo("x", input) && input.value && mOkCallback != nullptr)
-	{
-		mOkCallback(""); 
-		delete this;
-		return true;
-	}
-
-	return false;
+	const bool handled = GuiComponent::input(config, input);
+	if (mNavigationSound &&
+		(previousGridCursor != mGrid.getCursor() || previousKeyCursor != mKeyboardGrid->getCursor()))
+		mNavigationSound->play(0.8f);
+	return handled;
 }
 
 void GuiTextEditPopupKeyboard::toggleKeyState(bool& state, std::shared_ptr<ButtonComponent>& button)
@@ -468,16 +489,20 @@ void GuiTextEditPopupKeyboard::altKeys()
 
 std::vector<HelpPrompt> GuiTextEditPopupKeyboard::getHelpPrompts()
 {
-	std::vector<HelpPrompt> prompts = mGrid.getHelpPrompts();
+	std::vector<HelpPrompt> prompts = {
+		HelpPrompt("start", _("OK")),
+		HelpPrompt("l", _("SHIFT")),
+		HelpPrompt("y", _("SPACE")),
+		HelpPrompt("x", _("CANCEL")),
+		HelpPrompt("b", _("DELETE")),
+		HelpPrompt("a", _("ENTER")),
+		HelpPrompt("up/down/left/right", mGrid.getSelectedComponent() == mText && mText->isEditing()
+			? _("MOVE CURSOR") : _("CHOOSE"))
+	};
 
-	if (mOkCallback != nullptr)
-		prompts.push_back(HelpPrompt("x", _("RESET")));
+	for (size_t i = 0; i < prompts.size(); i++)
+		prompts[i].sortOrder = static_cast<int>(i);
 
-	prompts.push_back(HelpPrompt("y", _("SHIFT")));
-	prompts.push_back(HelpPrompt("start", _("OK")));
-	prompts.push_back(HelpPrompt(BUTTON_BACK, _("BACK")));
-	prompts.push_back(HelpPrompt("r", _("SPACE")));
-	prompts.push_back(HelpPrompt("l", _("DELETE")));
 	return prompts;
 }
 
