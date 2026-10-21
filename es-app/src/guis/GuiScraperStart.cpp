@@ -100,7 +100,7 @@ void GuiScraperStart::loadScrapPage()
 		return date->getTime() <= (now - (days * 86400));
 	};
 
-	int idx = 3;
+	int idx = 0;
 
 	mDateFilters = std::make_shared< OptionListComponent<FilterFunc> >(mWindow, _("IGNORE RECENTLY SCRAPED GAMES"), false);
 	mDateFilters->add(_("NO"), [](FileData*) -> bool { return true; }, idx == 0);
@@ -148,7 +148,11 @@ void GuiScraperStart::loadScrapPage()
 	mMenu.clearButtons();
 	mMenu.addButton(_("SCRAPE NOW"), _("START"), std::bind(&GuiScraperStart::pressedStart, this));
 
-	scraper_list->setSelectedChangedCallback([this, scraperName, scraper_list](std::string value) { Settings::getInstance()->setString("Scraper", value); });
+	scraper_list->setSelectedChangedCallback([this](const std::string& value)
+	{
+		Settings::getInstance()->setString("Scraper", value);
+		mWindow->postToUiThread([this] { loadActivePage(); });
+	});
 }
 
 void GuiScraperStart::loadSettingsPage()
@@ -163,13 +167,6 @@ void GuiScraperStart::loadSettingsPage()
 	const bool steamGridDB = scraper == "SteamGridDB";
 	if (steamGridDB)
 	{
-		auto ranking = std::make_shared<OptionListComponent<std::string>>(mWindow, _("BEST ASSET SELECTION"), false);
-		const std::string selectedRanking = Settings::getInstance()->getString("SteamGridDBAssetRanking");
-		ranking->add(_("MOST LIKES"), "likes", selectedRanking != "score");
-		ranking->add(_("HIGHEST SCORE"), "score", selectedRanking == "score");
-		addWithLabel(_("BEST ASSET SELECTION"), ranking);
-		addSaveFunc([ranking] { Settings::getInstance()->setString("SteamGridDBAssetRanking", ranking->getSelected()); });
-
 		auto addSource = [this](const std::string& label, const std::string& setting,
 			std::initializer_list<std::pair<std::string, std::string>> options)
 		{
@@ -339,6 +336,15 @@ void GuiScraperStart::loadSettingsPage()
 	if (mMenu.size() == rowsBeforeScrapeOptions)
 		removeLastRowIfGroup();
 
+	if (steamGridDB)
+	{
+		auto ranking = std::make_shared<OptionListComponent<std::string>>(mWindow, _("BEST ASSET SELECTION"), false);
+		const std::string selectedRanking = Settings::getInstance()->getString("SteamGridDBAssetRanking");
+		ranking->add(_("MOST LIKES"), "likes", selectedRanking != "score");
+		ranking->add(_("HIGHEST SCORE"), "score", selectedRanking == "score");
+		addWithLabel(_("BEST ASSET SELECTION"), ranking);
+		addSaveFunc([ranking] { Settings::getInstance()->setString("SteamGridDBAssetRanking", ranking->getSelected()); });
+	}
 
 	addGroup(_("MANUAL SCRAPE"));
 

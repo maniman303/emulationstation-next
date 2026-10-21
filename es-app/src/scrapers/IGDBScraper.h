@@ -34,11 +34,12 @@ class IGDBRequest : public ScraperHttpRequest
 {
 public:
 	// Search request with an optional filename fallback and parent media lookup.
-	IGDBRequest(std::queue<std::unique_ptr<ScraperRequest>>& requestsWrite, std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade, bool isManualScrape, const std::string& fallbackQuery = "")
-		: ScraperHttpRequest(resultsWrite, url, options), mRequestQueue(requestsWrite), mRequestOptions(*options), mFallbackQuery(fallbackQuery)
+	IGDBRequest(std::queue<std::unique_ptr<ScraperRequest>>& requestsWrite, std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade, bool isManualScrape, const std::string& fallbackQuery = "", bool isPlatformFallback = false, const std::string& preferredPlatform = "")
+		: ScraperHttpRequest(resultsWrite, url, options), mRequestQueue(requestsWrite), mRequestOptions(*options), mFallbackQuery(fallbackQuery), mPreferredPlatform(preferredPlatform)
 	{
 		mIsManualScrape = isManualScrape;
 		mIsArcade = isArcade;
+		mIsPlatformFallback = isPlatformFallback;
 	}
 
 	virtual bool retryOn249() { return !mIsManualScrape; }
@@ -51,6 +52,8 @@ protected:
 	std::queue<std::unique_ptr<ScraperRequest>>& mRequestQueue;
 	HttpReqOptions mRequestOptions;
 	std::string mFallbackQuery;
+	bool mIsPlatformFallback = false;
+	std::string mPreferredPlatform;
 };
 
 class IGDBParentMediaRequest : public ScraperHttpRequest
