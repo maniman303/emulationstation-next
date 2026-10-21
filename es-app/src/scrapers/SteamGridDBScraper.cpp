@@ -14,7 +14,7 @@ namespace SteamGridDB
 {
 
 static const MetaDataId mediaIds[] = { MetaDataId::Image, MetaDataId::Thumbnail, MetaDataId::Marquee };
-static const char* const mediaSettings[] = { "SteamGridDBImageSource", "ScrapperThumbSrc", "SteamGridDBLogoSource" };
+static const char* const mediaSettings[] = { "SteamGridDBImageSource", "SteamGridDBBoxSource", "SteamGridDBLogoSource" };
 using Clock = std::chrono::steady_clock;
 
 static std::string apiKey()

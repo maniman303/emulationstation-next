@@ -204,7 +204,7 @@ void IGDBScraper::generateRequests(const ScraperSearchParams& params, std::queue
 	if (cleanName.empty())
 		cleanName = Utils::String::removeParenthesis(Utils::FileSystem::getStem(params.game->getPath()));
 
-	const std::string fields = "fields id, name, game_type.type, parent_game, platforms.name, genres.name, game_modes.name, multiplayer_modes.offlinemax, release_dates.date, release_dates.region, release_dates.platform, cover.image_id, screenshots.image_id, artworks.image_id, url, summary, aggregated_rating, involved_companies.company.name, involved_companies.developer, involved_companies.publisher ;";
+	const std::string fields = "fields id, name, game_type.type, parent_game, platforms.name, genres.name, game_modes.name, multiplayer_modes.offlinemax, release_dates.date, release_dates.region, release_dates.platform, cover.image_id, cover.width, cover.height, screenshots.image_id, artworks.image_id, url, summary, aggregated_rating, involved_companies.company.name, involved_companies.developer, involved_companies.publisher ;";
 	const std::string data = fields + " search \"" + cleanName + "\"; limit 10;";
 
 	std::string fallbackData;
@@ -280,38 +280,63 @@ static bool hasIgdbMedia(const ScraperSearchResult& result, MetaDataId media)
 	return it != result.urls.end() && !it->second.url.empty();
 }
 
+static bool usesIgdbCover(const std::string& source)
+{
+	return source == "box-2D";
+}
+
+static std::string getIgdbCoverSize(const Value& cover)
+{
+	if (cover.HasMember("width") && cover["width"].IsInt() && cover.HasMember("height") && cover["height"].IsInt() &&
+		cover["width"].GetInt() >= 264 && cover["height"].GetInt() >= 374)
+		return "t_cover_big";
+
+	return "t_cover_small";
+}
+
 static void processIgdbMedia(const Value& game, ScraperSearchResult& result)
 {
-	if (!hasIgdbMedia(result, MetaDataId::Thumbnail) && game.HasMember("cover") && game["cover"].IsObject())
+	const std::string imageSource = Settings::getInstance()->getString("ScrapperImageSrc");
+	const std::string boxSource = Settings::getInstance()->getString("ScrapperThumbSrc");
+	auto coverUrl = [&game]() -> std::string
 	{
+		if (!game.HasMember("cover") || !game["cover"].IsObject())
+			return std::string();
 		const auto& cover = game["cover"];
-		if (cover.HasMember("image_id") && cover["image_id"].IsString() && cover["image_id"].GetStringLength() > 0)
-			result.urls[MetaDataId::Thumbnail] = "https://images.igdb.com/igdb/image/upload/t_original/" + std::string(cover["image_id"].GetString()) + ".jpg";
-	}
-
-	if (!hasIgdbMedia(result, MetaDataId::Image) && game.HasMember("artworks") && game["artworks"].IsArray())
+		if (!cover.HasMember("image_id") || !cover["image_id"].IsString() || cover["image_id"].GetStringLength() == 0)
+			return std::string();
+		return "https://images.igdb.com/igdb/image/upload/" + getIgdbCoverSize(cover) + "/" + std::string(cover["image_id"].GetString()) + ".jpg";
+	};
+	auto firstImageUrl = [&game](const char* collection, const std::string& size) -> std::string
 	{
-		for (const auto& artwork : game["artworks"].GetArray())
+		if (!game.HasMember(collection) || !game[collection].IsArray())
+			return std::string();
+		for (const auto& image : game[collection].GetArray())
 		{
-			if (!artwork.IsObject() || !artwork.HasMember("image_id") || !artwork["image_id"].IsString() || artwork["image_id"].GetStringLength() == 0)
+			if (!image.IsObject() || !image.HasMember("image_id") || !image["image_id"].IsString() || image["image_id"].GetStringLength() == 0)
 				continue;
-
-			result.urls[MetaDataId::Image] = "https://images.igdb.com/igdb/image/upload/t_1080p/" + std::string(artwork["image_id"].GetString()) + ".jpg";
-			break;
+			return "https://images.igdb.com/igdb/image/upload/" + size + "/" + std::string(image["image_id"].GetString()) + ".jpg";
 		}
-	}
+		return std::string();
+	};
 
-	if (Settings::getInstance()->getBool("ScrapeFanart") && !hasIgdbMedia(result, MetaDataId::FanArt) && game.HasMember("screenshots") && game["screenshots"].IsArray())
+	if (boxSource == "box-2D" && !hasIgdbMedia(result, MetaDataId::Thumbnail))
 	{
-		for (const auto& screenshot : game["screenshots"].GetArray())
-		{
-			if (!screenshot.IsObject() || !screenshot.HasMember("image_id") || !screenshot["image_id"].IsString() || screenshot["image_id"].GetStringLength() == 0)
-				continue;
-
-			result.urls[MetaDataId::FanArt] = "https://images.igdb.com/igdb/image/upload/t_screenshot_huge/" + std::string(screenshot["image_id"].GetString()) + ".jpg";
-			break;
-		}
+		result.urls[MetaDataId::Thumbnail] = coverUrl();
 	}
+
+	if (!hasIgdbMedia(result, MetaDataId::Image))
+	{
+		if (usesIgdbCover(imageSource))
+			result.urls[MetaDataId::Image] = coverUrl();
+		else if (imageSource == "ss")
+			result.urls[MetaDataId::Image] = firstImageUrl("screenshots", "t_screenshot_huge");
+		else if (imageSource == "fanart")
+			result.urls[MetaDataId::Image] = firstImageUrl("artworks", "t_1080p");
+	}
+
+	if (Settings::getInstance()->getBool("ScrapeFanart") && !hasIgdbMedia(result, MetaDataId::FanArt))
+		result.urls[MetaDataId::FanArt] = firstImageUrl("artworks", "t_1080p");
 }
 
 static void processIgdbGame(const Value& game, std::vector<ScraperSearchResult>& results, bool arcadeGame)
@@ -418,19 +443,36 @@ bool IGDBRequest::process(const std::string& response, std::vector<ScraperSearch
 				continue;
 
 			const auto& result = pendingResults.back();
-			const bool missingCover = !hasIgdbMedia(result, MetaDataId::Thumbnail);
-			const bool missingArtwork = !hasIgdbMedia(result, MetaDataId::Image);
-			const bool missingScreenshot = Settings::getInstance()->getBool("ScrapeFanart") && !hasIgdbMedia(result, MetaDataId::FanArt);
-			if (!missingCover && !missingArtwork && !missingScreenshot)
+			const std::string imageSource = Settings::getInstance()->getString("ScrapperImageSrc");
+			const std::string boxSource = Settings::getInstance()->getString("ScrapperThumbSrc");
+			const bool missingCover = boxSource == "box-2D" && !hasIgdbMedia(result, MetaDataId::Thumbnail);
+			const bool missingImage = !imageSource.empty() && !hasIgdbMedia(result, MetaDataId::Image);
+			const bool missingFanArt = Settings::getInstance()->getBool("ScrapeFanart") && !hasIgdbMedia(result, MetaDataId::FanArt);
+			if (!missingCover && !missingImage && !missingFanArt)
 				continue;
 
 			parentResults[v["parent_game"].GetUint()].push_back(pendingResults.size() - 1);
 			if (missingCover)
+			{
 				parentFields.insert("cover.image_id");
-			if (missingArtwork)
+				parentFields.insert("cover.width");
+				parentFields.insert("cover.height");
+			}
+			if (missingImage)
+			{
+				if (imageSource == "fanart")
+					parentFields.insert("artworks.image_id");
+				else if (imageSource == "ss")
+					parentFields.insert("screenshots.image_id");
+				else if (usesIgdbCover(imageSource))
+				{
+					parentFields.insert("cover.image_id");
+					parentFields.insert("cover.width");
+					parentFields.insert("cover.height");
+				}
+			}
+			if (missingFanArt)
 				parentFields.insert("artworks.image_id");
-			if (missingScreenshot)
-				parentFields.insert("screenshots.image_id");
 		}
 		catch (std::runtime_error& e)
 		{

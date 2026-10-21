@@ -9,6 +9,8 @@
 #include "LocaleES.h"
 #include "GuiLoading.h"
 #include "views/gamelist/IGameListView.h"
+#include <initializer_list>
+#include <utility>
 
 GuiScraperStart::GuiScraperStart(Window* window)
 	: GuiSettings(window, _("SCRAPER"), true)
@@ -149,7 +151,7 @@ void GuiScraperStart::loadScrapPage()
 	scraper_list->setSelectedChangedCallback([this, scraperName, scraper_list](std::string value) { Settings::getInstance()->setString("Scraper", value); });
 }
 
-void GuiScraperStart::loadSettingsPage() 
+void GuiScraperStart::loadSettingsPage()
 {
 	auto scrap = Scraper::getScraper();
 	if (scrap == nullptr)
@@ -161,11 +163,13 @@ void GuiScraperStart::loadSettingsPage()
 	const bool steamGridDB = scraper == "SteamGridDB";
 	if (steamGridDB)
 	{
-		auto addSource = [this](const std::string& label, const std::string& choice, const std::string& value, const std::string& setting)
+		auto addSource = [this](const std::string& label, const std::string& setting,
+			std::initializer_list<std::pair<std::string, std::string>> options)
 		{
 			auto list = std::make_shared<OptionListComponent<std::string>>(mWindow, label, false);
 			const std::string selected = Settings::getInstance()->getString(setting);
-			list->add(choice, value, selected == value);
+			for (const auto& option : options)
+				list->add(option.first, option.second, selected == option.second);
 			list->add(_("NONE"), "", selected.empty());
 			if (!list->hasSelection())
 				list->selectFirstItem();
@@ -173,18 +177,16 @@ void GuiScraperStart::loadSettingsPage()
 			addSaveFunc([list, setting] { Settings::getInstance()->setString(setting, list->getSelected()); });
 		};
 
-		const std::string imageSource = Settings::getInstance()->getString("SteamGridDBImageSource");
-		auto imageSourceList = std::make_shared<OptionListComponent<std::string>>(mWindow, _("IMAGE SOURCE"), false);
-		imageSourceList->add(_("STEAM HORIZONTAL GRID"), "sgdb-horizontal", imageSource == "sgdb-horizontal");
-		imageSourceList->add(_("STEAM VERTICAL GRID"), "sgdb-vertical", imageSource == "sgdb-vertical");
-		imageSourceList->add(_("NONE"), "", imageSource.empty());
-		if (!imageSourceList->hasSelection())
-			imageSourceList->selectFirstItem();
-		addWithLabel(_("IMAGE SOURCE"), imageSourceList);
-		addSaveFunc([imageSourceList] { Settings::getInstance()->setString("SteamGridDBImageSource", imageSourceList->getSelected()); });
-
-		addSource(_("BOX SOURCE"), _("STEAM SQUARE GRID"), "sgdb-square", "ScrapperThumbSrc");
-		addSource(_("LOGO SOURCE"), _("Logo"), "sgdb-logo", "SteamGridDBLogoSource");
+		addSource(_("IMAGE SOURCE"), "SteamGridDBImageSource", {
+			{ _("STEAM HORIZONTAL GRID"), "sgdb-horizontal" },
+			{ _("STEAM VERTICAL GRID"), "sgdb-vertical" }
+		});
+		addSource(_("BOX SOURCE"), "SteamGridDBBoxSource", {
+			{ _("STEAM SQUARE GRID"), "sgdb-square" }
+		});
+		addSource(_("LOGO SOURCE"), "SteamGridDBLogoSource", {
+			{ _("Logo"), "sgdb-logo" }
+		});
 	}
 
 	std::string imageSourceName = Settings::getInstance()->getString("ScrapperImageSrc");
@@ -248,24 +250,6 @@ void GuiScraperStart::loadSettingsPage()
 		addWithLabel(_("BOX SOURCE"), thumbSource);
 		addSaveFunc([thumbSource] { Settings::getInstance()->setString("ScrapperThumbSrc", thumbSource->getSelected()); });
 
-		imageSource->setSelectedChangedCallback([this, scrap, thumbSource](std::string value)
-			{
-				if (scrap->isMediaSupported(Scraper::ScraperMediaSource::Box2d))
-				{
-					if (value == "box-2D")
-						thumbSource->remove(_("BOX 2D"));
-					else
-						thumbSource->add(_("BOX 2D"), "box-2D", false);
-				}
-
-				if (scrap->isMediaSupported(Scraper::ScraperMediaSource::Box3d))
-				{
-					if (value == "box-3D")
-						thumbSource->remove(_("BOX 3D"));
-					else
-						thumbSource->add(_("BOX 3D"), "box-3D", false);
-				}
-			});
 	}
 
 	if (!steamGridDB && (scrap->isMediaSupported(Scraper::ScraperMediaSource::Marquee) || scrap->isMediaSupported(Scraper::ScraperMediaSource::Wheel) || scrap->isMediaSupported(Scraper::ScraperMediaSource::WheelHD)))
