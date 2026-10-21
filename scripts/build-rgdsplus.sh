@@ -4,7 +4,7 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$ROOT"
 
-for tool in cmake ninja aarch64-linux-gnu-gcc aarch64-linux-gnu-g++ aarch64-linux-gnu-readelf; do
+for tool in cmake ninja aarch64-linux-gnu-gcc aarch64-linux-gnu-g++ aarch64-linux-gnu-readelf aarch64-linux-gnu-strip file; do
     command -v "$tool" >/dev/null 2>&1 || {
         printf 'Missing build tool: %s\n' "$tool" >&2
         exit 2
@@ -13,8 +13,8 @@ done
 
 PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig \
 cmake -S . -B build/rgdsplus-aarch64 -G Ninja \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/aarch64-multiarch-linux-gnu.cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=CMake/toolchains/aarch64-multiarch-linux-gnu.cmake \
     -DROCKNIX=ON \
     -DFREETYPE_INCLUDE_DIR_ft2build=/usr/include/freetype2 \
     -DFREETYPE_INCLUDE_DIR_freetype2=/usr/include/freetype2 \
@@ -37,5 +37,6 @@ cmake -S . -B build/rgdsplus-aarch64 -G Ninja \
     -DALSA_LIBRARY=/usr/lib/aarch64-linux-gnu/libasound.so
 
 cmake --build build/rgdsplus-aarch64 --target emulationstation -j"${BUILD_JOBS:-2}"
+aarch64-linux-gnu-strip --strip-unneeded emulationstation
 file emulationstation
 aarch64-linux-gnu-readelf -h emulationstation | grep -E 'Class:|Machine:'

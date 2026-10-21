@@ -12,6 +12,10 @@ binary locally before connecting to the RG DS Plus; never build on the device.
 
 ### Build locally
 
+- Build optimized `Release` binaries by default from now on. Do not use
+  `Debug` or `RelWithDebInfo` unless explicitly requested. The RG DS Plus helper
+  uses `-DCMAKE_BUILD_TYPE=Release` and strips unneeded symbols with
+  `aarch64-linux-gnu-strip --strip-unneeded` to keep the deployed binary small.
 - Run commands from the repository root. On the supported Ubuntu/Debian
   multiarch host, build the ROCKNIX AArch64 target with:
 
@@ -26,7 +30,7 @@ binary locally before connecting to the RG DS Plus; never build on the device.
 - CMake places the executable at the repository root as `emulationstation`.
   Deploy that executable, not `emulationstation.sh`, which is a restart wrapper.
 - The helper uses the multiarch libraries and
-  `cmake/toolchains/aarch64-multiarch-linux-gnu.cmake`. Keep these ARM64 paths;
+  `CMake/toolchains/aarch64-multiarch-linux-gnu.cmake`. Keep these ARM64 paths;
   do not substitute host x86-64 libraries. Verify the artifact is AArch64
   before deployment.
 - Resolve local build and configuration problems before device activity. If a

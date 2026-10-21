@@ -1,10 +1,15 @@
 # RG DS Plus build and deployment
 
-Build the ROCKNIX AArch64 executable locally:
+Build the optimized ROCKNIX AArch64 Release executable locally:
 
 ```sh
 scripts/build-rgdsplus.sh
 ```
+
+The helper selects `-DCMAKE_BUILD_TYPE=Release` and strips unneeded symbols
+with `aarch64-linux-gnu-strip --strip-unneeded`, producing a smaller
+`emulationstation` executable at the repository root. Use Release builds by
+default; build with debug information only when explicitly requested.
 
 Copy `scripts/deploy-rgdsplus.conf.example` to
 `scripts/deploy-rgdsplus.conf`, then set `DEVICE_IP` and `DEVICE_PASSWORD` in
