@@ -114,6 +114,9 @@ set(ES_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ArcadeDBJSONScraper.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/HfsDBScraper.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/IGDBScraper.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/IGDBMetadata.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/IGDBSearch.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/GameSearchNames.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/SteamGridDBScraper.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/SteamGridDBClient.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ScreenScraper.h    
@@ -225,6 +228,7 @@ set(ES_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/IGDBScraper.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/SteamGridDBScraper.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/SteamGridDBClient.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/GameSearchNames.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ScreenScraper.cpp	
 
     # Views

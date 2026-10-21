@@ -38,8 +38,10 @@ Error checkKey(const std::string& trimmedKey);
 class Client
 {
 public:
-	Client(const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage = false, bool preferScore = false);
+	Client(const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage = false, bool preferScore = false, const std::vector<std::string>& knownNames = {});
 
+	bool needsAliases() const;
+	bool addAliases(const std::vector<std::string>& names);
 	std::string path() const;
 	std::string body() const; // Empty for authenticated GET search; JSON for artwork search.
 	void receive(int status, const std::string& body);
@@ -53,6 +55,8 @@ private:
 	void nextArtwork();
 	void fail(Error error, int status);
 
+	std::string mName;
+	bool mExplicitName;
 	std::vector<std::string> mQueries;
 	size_t mQuery = 0;
 	bool mSearching = true;

@@ -1,7 +1,8 @@
 #include "scrapers/IGDBScraper.h"
+#include "scrapers/IGDBSearch.h"
+#include "scrapers/IGDBMetadata.h"
 #include <exception>
 #include <map>
-#include <regex>
 #include "FileData.h"
 #include "Log.h"
 #include "PlatformId.h"
@@ -186,6 +187,7 @@ bool IGDBScraper::ensureToken()
 		if (!doc.HasParseError() && doc.HasMember("access_token"))
 		{
 			mToken = doc["access_token"].GetString();
+			mTokenDate = Utils::Time::DateTime::now();
 			return true;
 		}
 	}
@@ -195,30 +197,14 @@ bool IGDBScraper::ensureToken()
 
 void IGDBScraper::generateRequests(const ScraperSearchParams& params, std::queue<std::unique_ptr<ScraperRequest>>& requests, std::vector<ScraperSearchResult>& results)
 {
+	std::lock_guard<std::mutex> tokenLock(mTokenMutex);
 	if (!ensureToken())
 	{
 		requests.push(std::unique_ptr<ScraperRequest>(new IGDBCredentialErrorRequest(results)));
 		return;
 	}
 
-	mTokenDate = Utils::Time::DateTime::now();
-
-	std::string cleanName = params.nameOverride;
-	if (cleanName.empty())
-		cleanName = Utils::String::removeParenthesis(Utils::FileSystem::getStem(params.game->getPath()));
-
-	const std::string fields = "fields id, name, game_type.type, parent_game, platforms.name, genres.name, game_modes.name, multiplayer_modes.offlinemax, release_dates.date, release_dates.platform, cover.image_id, cover.width, cover.height, screenshots.image_id, artworks.image_id, url, summary, rating, aggregated_rating, involved_companies.company.name, involved_companies.developer, involved_companies.publisher ;";
-	const std::string data = fields + " search \"" + cleanName + "\"; limit 10;";
-
-	std::string fallbackData;
-	if (params.nameOverride.empty())
-	{
-		// Numbered ROM sets prefix titles with a catalogue number, e.g. "1633 - ".
-		static const std::regex cataloguePrefix(R"(^[0-9]+\s+-\s+)");
-		const std::string fallbackName = Utils::String::trim(std::regex_replace(cleanName, cataloguePrefix, ""));
-		if (!fallbackName.empty() && fallbackName != cleanName)
-			fallbackData = fields + " search \"" + fallbackName + "\"; limit 10;";
-	}
+	const std::string fields = "fields id, name, game_type.type, parent_game, platforms.name, genres.name, game_modes.name, multiplayer_modes.offlinemax, multiplayer_modes.platform, release_dates.date, release_dates.platform, cover.image_id, cover.width, cover.height, screenshots.image_id, artworks.image_id, url, summary, rating, aggregated_rating, involved_companies.company.name, involved_companies.developer, involved_companies.publisher ;";
 
 	std::string url = "https://api.igdb.com/v4/games";
 
@@ -228,14 +214,17 @@ void IGDBScraper::generateRequests(const ScraperSearchParams& params, std::queue
 	tokenAuth.customHeaders.push_back("Content-Type: text/plain");
 	tokenAuth.customHeaders.push_back("Accept: application/json");
 
-	auto queueRequest = [&](const std::string& platformFilter, const std::string& preferredPlatform)
+	auto queueRequest = [&](const std::string& preferredPlatform)
 	{
+		auto queries = IGDBSearch::queries(fields, Utils::FileSystem::getStem(params.game->getPath()),
+			params.nameOverride, preferredPlatform, {params.game->getName()});
+		if (queries.empty())
+			return;
 		HttpReqOptions options = tokenAuth;
-		options.dataToPost = data + platformFilter;
-		if (!fallbackData.empty())
-			requests.push(std::unique_ptr<ScraperRequest>(new IGDBRequest(requests, results, url, &options, params.system->hasPlatformId(PlatformIds::ARCADE), params.isManualScrape, fallbackData + platformFilter, false, preferredPlatform)));
-		else
-			requests.push(std::unique_ptr<ScraperRequest>(new IGDBRequest(requests, results, url, &options, params.system->hasPlatformId(PlatformIds::ARCADE), params.isManualScrape, "", false, preferredPlatform)));
+		options.dataToPost = queries.front();
+		queries.erase(queries.begin());
+		requests.push(std::unique_ptr<ScraperRequest>(new IGDBRequest(requests, results, url, &options,
+			params.system->hasPlatformId(PlatformIds::ARCADE), params.isManualScrape, queries, preferredPlatform)));
 	};
 
 	auto& platforms = params.system->getPlatformIds();
@@ -247,13 +236,62 @@ void IGDBScraper::generateRequests(const ScraperSearchParams& params, std::queue
 			if (it != igdb_platformids.cend())
 			{
 				for (auto plaformId : Utils::String::split(it->second, ',', true))
-					queueRequest(" where release_dates.platform = " + plaformId + ";", plaformId);
+					queueRequest(plaformId);
 			}
 		}
 	}
 
 	if (requests.size() == 0)
-		queueRequest("", "");
+		queueRequest("");
+}
+
+std::unique_ptr<IGDBNameLookup> IGDBScraper::prepareNameLookup(const ScraperSearchParams& params)
+{
+	std::lock_guard<std::mutex> tokenLock(mTokenMutex);
+	// This optional fallback must not make SteamGridDB require an IGDB account.
+	if (!params.nameOverride.empty() || !isSupportedPlatform(params.system) ||
+		Settings::getInstance()->getString("IGDBClientID").empty() || Settings::getInstance()->getString("IGDBSecret").empty() ||
+		!ensureToken())
+		return nullptr;
+
+	std::string platforms;
+	for (const auto& platform : params.system->getPlatformIds())
+	{
+		const auto found = igdb_platformids.find(platform);
+		if (found != igdb_platformids.end())
+			platforms += (platforms.empty() ? "" : ",") + found->second;
+	}
+	const auto names = GameSearchNames::candidates(Utils::FileSystem::getStem(params.game->getPath()));
+	const auto query = IGDBSearch::aliasQuery("fields id, name;", names, platforms);
+	if (query.empty()) return nullptr;
+	HttpReqOptions options;
+	options.connectTimeout = 10000;
+	options.useCookieManager = false;
+	options.customHeaders = {
+		"Client-ID: " + Settings::getInstance()->getString("IGDBClientID"),
+		"Authorization: Bearer " + mToken, "Content-Type: text/plain", "Accept: application/json"
+	};
+	options.dataToPost = query;
+	return std::unique_ptr<IGDBNameLookup>(new IGDBNameLookup(options));
+}
+
+void IGDBNameLookup::update()
+{
+	if (mStatus != ASYNC_IN_PROGRESS) return;
+	if (!mRequest)
+	{
+		mStarted = std::chrono::steady_clock::now();
+		mRequest.reset(new HttpReq("https://api.igdb.com/v4/games", &mOptions));
+		return;
+	}
+	const auto status = mRequest->status();
+	if (status == HttpReq::REQ_IN_PROGRESS && std::chrono::steady_clock::now() - mStarted < std::chrono::seconds(20))
+		return;
+	if (status == HttpReq::REQ_SUCCESS)
+		mNames = IGDBSearch::confirmedNames(mRequest->getContent());
+	// Name enrichment is optional; failure preserves the original scraper result.
+	mRequest.reset();
+	setStatus(ASYNC_DONE);
 }
 
 bool IGDBScraper::isSupportedPlatform(SystemData* system)
@@ -342,86 +380,29 @@ static void processIgdbMedia(const Value& game, ScraperSearchResult& result)
 		result.urls[MetaDataId::FanArt] = firstImageUrl("artworks", "t_1080p");
 }
 
-static void processIgdbGame(const Value& game, std::vector<ScraperSearchResult>& results, bool arcadeGame,
-	const std::string& preferredPlatform)
+static void applyIgdbInfo(const IGDBMetadata::Info& info, ScraperSearchResult& result)
+{
+	if (!info.description.empty()) result.mdl.set(MetaDataId::Desc, info.description);
+	if (!info.developer.empty()) result.mdl.set(MetaDataId::Developer, info.developer);
+	if (!info.publisher.empty()) result.mdl.set(MetaDataId::Publisher, info.publisher);
+	if (!info.genre.empty())
+	{
+		result.mdl.set(MetaDataId::Genre, info.genre);
+		Genres::convertGenreToGenreIds(&result.mdl);
+	}
+	if (info.players > 0) result.mdl.set(MetaDataId::Players, std::to_string(info.players));
+	result.mdl.set(MetaDataId::Rating, std::to_string(info.rating));
+	if (info.releaseDate)
+		result.mdl.set(MetaDataId::ReleaseDate, Utils::Time::DateTime(static_cast<std::time_t>(info.releaseDate)));
+}
+
+static void processIgdbGame(const Value& game, std::vector<ScraperSearchResult>& results, const IGDBMetadata::Info& info)
 {
 	ScraperSearchResult result("IGDB");
 	if (game.HasMember("name") && game["name"].IsString())
 		result.mdl.set(MetaDataId::Name, game["name"].GetString());
-
-	if (game.HasMember("summary") && game["summary"].IsString())
-		result.mdl.set(MetaDataId::Desc, game["summary"].GetString());
-
-	if (game.HasMember("rating") && game["rating"].IsNumber())
-		result.mdl.set(MetaDataId::Rating, std::to_string(game["rating"].GetDouble() / 100.0));
-	else if (game.HasMember("aggregated_rating") && game["aggregated_rating"].IsNumber())
-		result.mdl.set(MetaDataId::Rating, std::to_string(game["aggregated_rating"].GetDouble() / 100.0));
-	else
-		result.mdl.set(MetaDataId::Rating, "-1");
-
-	if (game.HasMember("release_dates") && game["release_dates"].IsArray())
-	{
-		uint64_t fallbackDate = 0;
-		uint64_t platformDate = 0;
-		for (const auto& releaseDate : game["release_dates"].GetArray())
-		{
-			if (!releaseDate.IsObject() || !releaseDate.HasMember("date") || !releaseDate["date"].IsUint64())
-				continue;
-			const uint64_t date = releaseDate["date"].GetUint64();
-			if (!date)
-				continue;
-			if (fallbackDate == 0 || date < fallbackDate)
-				fallbackDate = date;
-			if (!preferredPlatform.empty() && releaseDate.HasMember("platform") && releaseDate["platform"].IsUint() &&
-				std::to_string(releaseDate["platform"].GetUint()) == preferredPlatform)
-			{
-				if (platformDate == 0 || date < platformDate)
-					platformDate = date;
-			}
-		}
-		const uint64_t selectedDate = platformDate != 0 ? platformDate : fallbackDate;
-		if (selectedDate != 0)
-			result.mdl.set(MetaDataId::ReleaseDate, Utils::Time::DateTime(static_cast<std::time_t>(selectedDate)));
-	}
-
-	if (game.HasMember("involved_companies") && game["involved_companies"].IsArray())
-	{
-		const Value& involved_companies = game["involved_companies"];
-		for (int i = 0; i < (int)involved_companies.Size(); ++i)
-		{
-			auto& involved_company = involved_companies[i];
-			if (involved_company.HasMember("company") && involved_company["company"].IsObject() && involved_company["company"].HasMember("name") && involved_company["company"]["name"].IsString())
-			{
-				std::string companyName = involved_company["company"]["name"].GetString();
-				if (!companyName.empty())
-				{
-					if (involved_company.HasMember("developer") && involved_company["developer"].IsBool() && involved_company["developer"].GetBool())
-						result.mdl.set(MetaDataId::Developer, companyName);
-
-					if (involved_company.HasMember("publisher") && involved_company["publisher"].IsBool() && involved_company["publisher"].GetBool())
-						result.mdl.set(MetaDataId::Publisher, companyName);
-				}
-			}
-		}
-	}
-
+	applyIgdbInfo(info, result);
 	processIgdbMedia(game, result);
-
-	/*
-	if (Settings::getInstance()->getBool("ScrapeVideos") && game.HasMember("videos") && game["videos"].IsArray())
-	{
-		const Value& videos = game["videos"];
-		for (int i = 0; i < (int)videos.Size(); ++i)
-		{
-			auto& video = videos[i];
-			if (!video.HasMember("video_id") || !video["video_id"].IsString())
-				continue;
-
-			result.urls[MetaDataId::Video] = "https://www.youtube.com/watch?v=" + std::string(video["video_id"].GetString());
-			break;
-		}
-	}
-	*/
 	results.push_back(result);
 }
 
@@ -448,36 +429,21 @@ bool IGDBRequest::process(const std::string& response, std::vector<ScraperSearch
 
 	if (doc.Empty())
 	{
-		if (!mFallbackQuery.empty())
+		if (!mFallbackQueries.empty())
 		{
-			LOG(LogDebug) << "IGDB: no matches; retrying without the ROM catalogue number";
+			LOG(LogDebug) << "IGDB: no matches; trying the next title query";
 			HttpReqOptions options = mRequestOptions;
-			options.dataToPost = mFallbackQuery;
+			options.dataToPost = mFallbackQueries.front();
+			mFallbackQueries.erase(mFallbackQueries.begin());
 			mRequestQueue.push(std::unique_ptr<ScraperRequest>(new IGDBRequest(mRequestQueue, results, mUrl, &options,
-				mIsArcade, mIsManualScrape, "", false, mPreferredPlatform)));
-			mFallbackQuery.clear();
-			return true;
-		}
-
-		const std::string platformFilter = " where release_dates.platform = ";
-		const auto filterStart = mRequestOptions.dataToPost.find(platformFilter);
-		if (filterStart != std::string::npos && !mIsPlatformFallback)
-		{
-			const auto filterEnd = mRequestOptions.dataToPost.find(';', filterStart);
-			if (filterEnd != std::string::npos)
-			{
-				HttpReqOptions options = mRequestOptions;
-				options.dataToPost.erase(filterStart, filterEnd - filterStart + 1);
-				mRequestQueue.push(std::unique_ptr<ScraperRequest>(new IGDBRequest(mRequestQueue, results, mUrl, &options,
-					mIsArcade, mIsManualScrape, "", true, mPreferredPlatform)));
-				LOG(LogDebug) << "IGDB: no platform-specific match; retrying without release-date platform filter";
-			}
+				mIsArcade, mIsManualScrape, mFallbackQueries, mPreferredPlatform)));
+			mFallbackQueries.clear();
 		}
 		return true;
 	}
 
 	std::vector<ScraperSearchResult> pendingResults;
-	IGDBParentMediaRequest::ParentResults parentResults;
+	IGDBParentRequest::ParentResults parentResults;
 	std::set<std::string> parentFields;
 	for (int i = 0; i < (int)doc.Size(); ++i)
 	{
@@ -487,22 +453,25 @@ bool IGDBRequest::process(const std::string& response, std::vector<ScraperSearch
 
 		try
 		{
-			processIgdbGame(v, pendingResults, mIsArcade, mPreferredPlatform);
-			if (!isIgdbPort(v) ||
-				!v.HasMember("parent_game") || !v["parent_game"].IsUint() || v["parent_game"].GetUint() == 0 ||
+			const auto info = IGDBMetadata::read(v, mPreferredPlatform);
+			processIgdbGame(v, pendingResults, info);
+			if (!v.HasMember("parent_game") || !v["parent_game"].IsUint() || v["parent_game"].GetUint() == 0 ||
 				(v.HasMember("id") && v["id"].IsUint() && v["id"].GetUint() == v["parent_game"].GetUint()))
 				continue;
 
 			const auto& result = pendingResults.back();
 			const std::string imageSource = Settings::getInstance()->getString("ScrapperImageSrc");
 			const std::string boxSource = Settings::getInstance()->getString("ScrapperThumbSrc");
-			const bool missingCover = boxSource == "box-2D" && !hasIgdbMedia(result, MetaDataId::Thumbnail);
-			const bool missingImage = !imageSource.empty() && !hasIgdbMedia(result, MetaDataId::Image);
-			const bool missingFanArt = Settings::getInstance()->getBool("ScrapeFanart") && !hasIgdbMedia(result, MetaDataId::FanArt);
-			if (!missingCover && !missingImage && !missingFanArt)
+			const bool inheritMedia = isIgdbPort(v);
+			const auto missingInfo = IGDBMetadata::missingFields(info);
+			const bool missingCover = inheritMedia && boxSource == "box-2D" && !hasIgdbMedia(result, MetaDataId::Thumbnail);
+			const bool missingImage = inheritMedia && !imageSource.empty() && !hasIgdbMedia(result, MetaDataId::Image);
+			const bool missingFanArt = inheritMedia && Settings::getInstance()->getBool("ScrapeFanart") && !hasIgdbMedia(result, MetaDataId::FanArt);
+			if (missingInfo.empty() && !missingCover && !missingImage && !missingFanArt)
 				continue;
 
-			parentResults[v["parent_game"].GetUint()].push_back(pendingResults.size() - 1);
+			parentResults[v["parent_game"].GetUint()].push_back({pendingResults.size() - 1, inheritMedia, info});
+			parentFields.insert(missingInfo.begin(), missingInfo.end());
 			if (missingCover)
 			{
 				parentFields.insert("cover.image_id");
@@ -535,7 +504,7 @@ bool IGDBRequest::process(const std::string& response, std::vector<ScraperSearch
 		results.insert(results.end(), pendingResults.begin(), pendingResults.end());
 	else
 	{
-		// Fetch all missing media and distinct parents in one request, without the port's platform filter.
+		// Fetch missing metadata and media from distinct parents in one request, without a platform filter.
 		HttpReqOptions options = mRequestOptions;
 		options.dataToPost = "fields id";
 		for (const auto& field : parentFields)
@@ -548,21 +517,21 @@ bool IGDBRequest::process(const std::string& response, std::vector<ScraperSearch
 			separator = ",";
 		}
 		options.dataToPost += "); limit " + std::to_string(parentResults.size()) + ";";
-		mRequestQueue.push(std::unique_ptr<ScraperRequest>(new IGDBParentMediaRequest(results, mUrl, &options,
-			std::move(pendingResults), std::move(parentResults), mIsManualScrape)));
+		mRequestQueue.push(std::unique_ptr<ScraperRequest>(new IGDBParentRequest(results, mUrl, &options,
+			std::move(pendingResults), std::move(parentResults), mIsManualScrape, mPreferredPlatform)));
 	}
 
 	return true;
 }
 
-IGDBParentMediaRequest::IGDBParentMediaRequest(std::vector<ScraperSearchResult>& results, const std::string& url, HttpReqOptions* options,
-	std::vector<ScraperSearchResult> pendingResults, ParentResults parentResults, bool isManualScrape)
+IGDBParentRequest::IGDBParentRequest(std::vector<ScraperSearchResult>& results, const std::string& url, HttpReqOptions* options,
+	std::vector<ScraperSearchResult> pendingResults, ParentResults parentResults, bool isManualScrape, const std::string& preferredPlatform)
 	: ScraperHttpRequest(results, url, options), mPendingResults(std::move(pendingResults)),
-	mParentResults(std::move(parentResults)), mIsManualScrape(isManualScrape)
+	mParentResults(std::move(parentResults)), mIsManualScrape(isManualScrape), mPreferredPlatform(preferredPlatform)
 {
 }
 
-void IGDBParentMediaRequest::update()
+void IGDBParentRequest::update()
 {
 	if (mStatus != ASYNC_IN_PROGRESS)
 		return;
@@ -571,22 +540,22 @@ void IGDBParentMediaRequest::update()
 	if (mStatus == ASYNC_IN_PROGRESS)
 		return;
 
-	// Parent media is optional: preserve the port's results even if the lookup fails.
+	// Parent data is optional: preserve the game's results even if the lookup fails.
 	if (mStatus == ASYNC_ERROR)
-		LOG(LogWarning) << "IGDB parent media lookup failed: " << getStatusString();
+		LOG(LogWarning) << "IGDB parent lookup failed: " << getStatusString();
 
 	mResults.insert(mResults.end(), mPendingResults.begin(), mPendingResults.end());
 	mPendingResults.clear();
 	setStatus(ASYNC_DONE);
 }
 
-bool IGDBParentMediaRequest::process(const std::string& response, std::vector<ScraperSearchResult>& results)
+bool IGDBParentRequest::process(const std::string& response, std::vector<ScraperSearchResult>& results)
 {
 	Document doc;
 	doc.Parse(response.c_str());
 	if (doc.HasParseError() || !doc.IsArray())
 	{
-		LOG(LogWarning) << "IGDB parent media response is not valid";
+		LOG(LogWarning) << "IGDB parent response is not valid";
 		return false;
 	}
 
@@ -599,8 +568,13 @@ bool IGDBParentMediaRequest::process(const std::string& response, std::vector<Sc
 		if (it == mParentResults.end())
 			continue;
 
-		for (auto index : it->second)
-			processIgdbMedia(parent, mPendingResults[index]);
+		for (const auto& target : it->second)
+		{
+			auto& result = mPendingResults[target.index];
+			applyIgdbInfo(IGDBMetadata::inherit(target.info, IGDBMetadata::read(parent, mPreferredPlatform)), result);
+			if (target.inheritMedia)
+				processIgdbMedia(parent, result);
+		}
 	}
 	return true;
 }

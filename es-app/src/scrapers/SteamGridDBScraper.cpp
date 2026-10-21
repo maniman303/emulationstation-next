@@ -1,5 +1,6 @@
 #include "scrapers/SteamGridDBScraper.h"
 #include "scrapers/SteamGridDBClient.h"
+#include "scrapers/IGDBScraper.h"
 
 #include "LocaleES.h"
 #include "Settings.h"
@@ -88,8 +89,10 @@ class SteamGridDBRequest : public ScraperRequest
 {
 public:
 	SteamGridDBRequest(std::vector<ScraperSearchResult>& results, const std::string& credential,
-		const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage, bool preferScore)
-		: ScraperRequest(results), mKey(credential), mClient(name, explicitName, manual, enabled, verticalImage, preferScore)
+		const std::string& name, bool explicitName, bool manual, const std::array<bool, 3>& enabled, bool verticalImage, bool preferScore,
+		const std::vector<std::string>& knownNames, std::unique_ptr<IGDBNameLookup> nameLookup)
+		: ScraperRequest(results), mKey(credential), mClient(name, explicitName, manual, enabled, verticalImage, preferScore, knownNames),
+		mNameLookup(std::move(nameLookup))
 	{
 		const auto validation = SteamGridDB::checkKey(mKey);
 		if (validation != SteamGridDB::Error::None)
@@ -104,6 +107,12 @@ public:
 	void update() override
 	{
 		if (mStatus != ASYNC_IN_PROGRESS) return;
+		if (mNameLookup && mClient.needsAliases())
+		{
+			if (mNameLookup->status() == ASYNC_IN_PROGRESS) return;
+			mClient.addAliases(mNameLookup->names());
+			mNameLookup.reset();
+		}
 		if (!mClient.done())
 		{
 			const auto path = mClient.path();
@@ -138,6 +147,7 @@ public:
 			}
 			mRequest.reset();
 		}
+		if (mNameLookup && mClient.needsAliases()) return;
 		if (!mClient.done()) return;
 		if (mClient.error() != SteamGridDB::Error::None)
 		{
@@ -160,6 +170,7 @@ private:
 	HttpReqOptions mOptions;
 	SteamGridDB::Client mClient;
 	std::unique_ptr<HttpReq> mRequest;
+	std::unique_ptr<IGDBNameLookup> mNameLookup;
 	Clock::time_point mStarted;
 };
 
@@ -204,5 +215,10 @@ void SteamGridDBScraper::generateRequests(const ScraperSearchParams& params,
 			(params.isManualScrape || overwrite || !Utils::FileSystem::exists(params.game->getMetadata(SteamGridDB::mediaIds[i])));
 	const bool verticalImage = Settings::getInstance()->getString("SteamGridDBImageSource") == "sgdb-vertical";
 	const bool preferScore = Settings::getInstance()->getString("SteamGridDBAssetRanking") == "score";
-	requests.push(std::unique_ptr<ScraperRequest>(new SteamGridDB::SteamGridDBRequest(results, credential, name, !params.nameOverride.empty(), params.isManualScrape, enabled, verticalImage, preferScore)));
+	std::unique_ptr<IGDBNameLookup> lookup;
+	if (SteamGridDB::checkKey(credential) == SteamGridDB::Error::None)
+		lookup = static_cast<IGDBScraper*>(Scraper::getScraper("IGDB"))->prepareNameLookup(params);
+	const std::vector<std::string> knownNames = params.nameOverride.empty() ? std::vector<std::string>{params.game->getName()} : std::vector<std::string>{};
+	requests.push(std::unique_ptr<ScraperRequest>(new SteamGridDB::SteamGridDBRequest(results, credential, name,
+		!params.nameOverride.empty(), params.isManualScrape, enabled, verticalImage, preferScore, knownNames, std::move(lookup))));
 }

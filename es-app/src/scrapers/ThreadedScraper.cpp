@@ -63,7 +63,7 @@ ThreadedScraper::~ThreadedScraper()
 {
 	if (mWndNotification != nullptr)
 	{
-		mWndNotification->closeAfter(3000);
+		mWndNotification->closeAfter(1600);
 		mWndNotification = nullptr;
 	}
 

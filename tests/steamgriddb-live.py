@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Read-only API checks against the production client. Never persist the key.
 
-Compile tests/steamgriddb-client.cpp with SteamGridDBClient.cpp first, then run:
+Compile tests/steamgriddb-client.cpp with SteamGridDBClient.cpp and GameSearchNames.cpp first, then run:
     python3 tests/steamgriddb-live.py /tmp/steamgriddb-tests
 """
 import getpass

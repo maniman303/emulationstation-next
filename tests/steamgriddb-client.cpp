@@ -1,4 +1,6 @@
 #include "scrapers/SteamGridDBClient.h"
+#include "scrapers/GameSearchNames.h"
+#include "scrapers/IGDBSearch.h"
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
@@ -38,7 +40,7 @@ static void tests()
 	check(searchNames("Metroid Fusion", false).size() == 1, "ordinary title has no redundant variants");
 	check(searchNames("Pokemon Emerald Version", false).size() == 2, "generic Version suffix gets one bounded fallback query");
 	const auto variants = searchNames("1633 - Metroid_Fusion (USA) [! weirdo]", false);
-	check(variants.front() == "Metroid Fusion" && variants.size() == 3, "numbered tagged filename cleaned first with bounded variants");
+	check(variants.front() == "Metroid Fusion" && variants.size() == 1, "numbered tagged filename cleaned first with bounded variants");
 	check(searchNames("1942 - Joint Strike", false).front() == "1942 - Joint Strike", "preserve meaningful numeric title");
 	check(searchNames("0001 - Electroplankton", false).front() == "Electroplankton", "zero-padded catalogue prefix");
 	check(searchNames("0001_Electroplankton (Japan)", false).front() == "Electroplankton", "catalogue prefix with underscore separator");
@@ -52,6 +54,32 @@ static void tests()
 	check(titleRelevance("Super Mario Land 2", "Super Mario Land 3") == 0, "do not confuse numbered sequels");
 	check(titleRelevance("Metroid Fusion", "Metroid") < .75, "unrelated fuzzy autocomplete result rejected for automatic scrape");
 	check(titleRelevance("Mario & Luigi", "Mario Luigi") > .95, "punctuation normalized");
+	const std::string rhythmRom = "3699 - Rhythm Paradise (EU)(M3)(EXiMiUS)";
+	check(GameSearchNames::candidates(rhythmRom) == std::vector<std::string>{"Rhythm Paradise"}, "shared builder removes catalogue and tags without wasteful queries");
+	check(GameSearchNames::candidates(rhythmRom, false, {"Rhythm Heaven", "Rhythm Heaven"}) ==
+		std::vector<std::string>{"Rhythm Paradise", "Rhythm Heaven"}, "verified regional names added once, without special game rules");
+	check(GameSearchNames::candidates("1942 - Joint Strike (USA)") == std::vector<std::string>{"1942 - Joint Strike"},
+		"numeric game identity is never dropped in a fallback");
+	const auto bounded = GameSearchNames::candidates("Title", false, {"A", "B", "C", "D", "E", "F", "G", "H", "I"});
+	check(bounded.size() == GameSearchNames::MaxCandidates, "combined candidate list is bounded");
+	check(IGDBSearch::confirmedNames("invalid json").empty(), "failed optional name lookup supplies no aliases");
+	Client rhythm(rhythmRom, false, false, {{true, false, false}});
+	rhythm.receive(200, R"({"success":true,"data":[{"id":36878,"name":"Rhythm Heaven"},{"id":5337802,"name":"Beat the Beat Rhythm Paradise"}]})");
+	check(rhythm.needsAliases(), "weak regional suggestions require verified identity");
+	check(rhythm.addAliases(IGDBSearch::confirmedNames(R"([{"id":8167,"name":"Rhythm Heaven"}])")), "IGDB canonical record enriches shared candidates");
+	check(rhythm.path() == "/api/v2/search/autocomplete/Rhythm%20Heaven", "new canonical query runs without repeating filename search");
+	rhythm.receive(200, R"({"success":true,"data":[{"id":36878,"name":"Rhythm Heaven"},{"id":5252765,"name":"Rhythm Heaven Fever"}]})");
+	check(!rhythm.needsAliases() && rhythm.body().find("36878") != std::string::npos, "verified DS title selected over Wii sequel");
+	rhythm.receive(200, page(art(99, 4, 0, 460, 215), 1));
+	check(rhythm.done() && rhythm.results().size() == 1 && rhythm.results()[0].artwork[0].id == 99, "regional filename finds artwork after canonical lookup");
+	Client noAlias(rhythmRom, false, false, {{false, false, false}});
+	noAlias.receive(200, R"({"success":true,"data":[]})");
+	check(!noAlias.addAliases({}) && noAlias.done() && noAlias.results().empty(), "unavailable optional lookup preserves no-match result");
+	Client explicitQuery("Rhythm Paradise", true, false, {{false, false, false}});
+	check(!explicitQuery.addAliases({"Rhythm Heaven"}), "explicit query is not silently rewritten");
+	Client metadataName(rhythmRom, false, false, {{false, false, false}}, false, false, {"Rhythm Heaven"});
+	metadataName.receive(200, R"({"success":true,"data":[{"id":36878,"name":"Rhythm Heaven"}]})");
+	check(metadataName.done() && metadataName.results().size() == 1, "existing gamelist title can establish regional identity without IGDB lookup");
 
 	Client client("1633 - Metroid Fusion (USA)", false, false, {{true, true, true}});
 	check(client.path() == "/api/v2/search/autocomplete/Metroid%20Fusion", "query is cleaned and URL encoded");
@@ -171,11 +199,25 @@ static void tests()
 
 // A small line protocol lets the live Python probe drive the actual production
 // client with urllib, without linking the frontend or passing secrets to it.
-static int drive(const std::string& name)
+static int drive(const std::string& name, const char* platform = nullptr)
 {
 	Client client(name, false, false, {{true, true, true}});
-	while (!client.done())
+	bool lookedUp = false;
+	while (true)
 	{
+		if (platform && !lookedUp && client.needsAliases())
+		{
+			lookedUp = true;
+			const auto query = IGDBSearch::aliasQuery("fields id, name;", GameSearchNames::candidates(name), platform);
+			rapidjson::StringBuffer buffer;
+			rapidjson::Writer<rapidjson::StringBuffer> out(buffer);
+			out.StartObject(); out.Key("body"); out.String(query.c_str()); out.EndObject();
+			std::cout << "LOOKUP " << buffer.GetString() << std::endl;
+			std::string status, response;
+			if (!std::getline(std::cin, status) || !std::getline(std::cin, response)) return 2;
+			if (status == "200") client.addAliases(IGDBSearch::confirmedNames(response));
+		}
+		if (client.done()) break;
 		rapidjson::StringBuffer requestBuffer;
         rapidjson::Writer<rapidjson::StringBuffer> request(requestBuffer);
         request.StartObject(); request.Key("path"); request.String(client.path().c_str());
@@ -209,5 +251,6 @@ static int drive(const std::string& name)
 int main(int argc, char** argv)
 {
 	if (argc == 3 && std::string(argv[1]) == "--drive") return drive(argv[2]);
+	if (argc == 4 && std::string(argv[1]) == "--drive-resolve") return drive(argv[2], argv[3]);
 	tests();
 }
