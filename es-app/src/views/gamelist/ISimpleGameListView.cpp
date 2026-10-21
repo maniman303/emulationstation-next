@@ -314,6 +314,8 @@ bool ISimpleGameListView::input(InputConfig* config, Input input)
 	{
 		if (!mPopupSelfReference)
 		{
+			if (auto sound = Sound::getScrollSound(getTheme().get(), getName()))
+				sound->play();
 			onFocusLost();
 			ViewController::get()->goToNextGameList();
 		}
@@ -324,6 +326,8 @@ bool ISimpleGameListView::input(InputConfig* config, Input input)
 	{
 		if (!mPopupSelfReference)
 		{
+			if (auto sound = Sound::getScrollSound(getTheme().get(), getName()))
+				sound->play();
 			onFocusLost();
 			ViewController::get()->goToPrevGameList();
 		}

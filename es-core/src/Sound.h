@@ -14,10 +14,12 @@ class Sound
 	std::string mPath;
 	Mix_Chunk* mSampleData;
 	int mPlayingChannel;
+	float mPlaybackRate;
 
 public:
-	static std::shared_ptr<Sound> get(const std::string& path);
+	static std::shared_ptr<Sound> get(const std::string& path, float playbackRate = 1.0f);
 	static std::shared_ptr<Sound> getFromTheme(const std::shared_ptr<ThemeData>& theme, const std::string& view, const std::string& elem);
+	static std::shared_ptr<Sound> getScrollSound(const ThemeData* theme, const std::string& view, float playbackRate = 1.0f);
 
 	~Sound();
 
@@ -26,12 +28,12 @@ public:
 
 	void loadFile(const std::string & path);
 
-	void play();
+	void play(float volume = 1.0f);
 	bool isPlaying() const;
 	void stop();
 
 private:
-	Sound(const std::string & path = "");
+	Sound(const std::string & path = "", float playbackRate = 1.0f);
 	static std::map< std::string, std::shared_ptr<Sound> > sMap;
 };
 

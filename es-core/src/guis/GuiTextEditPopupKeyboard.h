@@ -7,6 +7,8 @@
 #include "components/TextComponent.h"
 #include <functional>
 
+class Sound;
+
 class GuiTextEditPopupKeyboard : public GuiComponent
 {
 public:
@@ -47,6 +49,7 @@ private:
 	std::shared_ptr<TextComponent> mTitle;
 	std::shared_ptr<TextEditComponent> mText;
 	std::shared_ptr<ComponentGrid> mKeyboardGrid;
+	std::shared_ptr<Sound> mNavigationSound;
 	
 	std::function<void(const std::string&)> mOkCallback;
 

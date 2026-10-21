@@ -4,6 +4,7 @@
 #include "Log.h"
 #include "LocaleES.h"
 #include "SystemConf.h"
+#include "Sound.h"
 
 #define OSK_WIDTH (Renderer::ScreenSettings::fullScreenMenus() ? Renderer::getScreenWidth() : Renderer::getScreenWidth() * 0.78f)
 #define OSK_HEIGHT (Renderer::ScreenSettings::fullScreenMenus() ? Renderer::getScreenHeight() : Renderer::getScreenHeight() * 0.60f)
@@ -101,6 +102,16 @@ GuiTextEditPopupKeyboard::GuiTextEditPopupKeyboard(Window* window, const std::st
 	: GuiComponent(window), mBackground(window, ":/frame.png"), mGrid(window, Vector2i(1, 6)), mMultiLine(multiLine)
 {
 	setTag("popup");
+	if (auto* currentTheme = ThemeData::getDefaultTheme())
+	{
+		for (const auto& view : { currentTheme->getDefaultView(), std::string("detailed"), std::string("basic"),
+			std::string("grid"), std::string("carousel"), std::string("video"), std::string("system") })
+		{
+			mNavigationSound = Sound::getScrollSound(currentTheme, view, 1.08f);
+			if (mNavigationSound)
+				break;
+		}
+	}
 
 	mOkCallback = okCallback;
 
@@ -334,8 +345,17 @@ void GuiTextEditPopupKeyboard::onSizeChanged()
 
 bool GuiTextEditPopupKeyboard::input(InputConfig* config, Input input)
 {
+	const auto previousGridCursor = mGrid.getCursor();
+	const auto previousKeyCursor = mKeyboardGrid->getCursor();
+	const bool navigating = input.value != 0 && (config->isMappedLike("up", input) ||
+		config->isMappedLike("down", input) || config->isMappedLike("left", input) || config->isMappedLike("right", input));
 	if (GuiComponent::input(config, input))
+	{
+		if (navigating && mNavigationSound &&
+			(previousGridCursor != mGrid.getCursor() || previousKeyCursor != mKeyboardGrid->getCursor()))
+			mNavigationSound->play(0.8f);
 		return true;
+	}
 
 	// pressing start
 	if (config->isMappedTo("start", input) && input.value)
