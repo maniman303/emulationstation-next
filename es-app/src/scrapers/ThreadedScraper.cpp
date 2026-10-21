@@ -13,28 +13,19 @@
 ThreadedScraper* ThreadedScraper::mInstance = nullptr;
 bool ThreadedScraper::mPaused = false;
 
-ThreadedScraper::ThreadedScraper(Window* window, const std::queue<ScraperSearchParams>& searches, int threadCount)
+ThreadedScraper::ThreadedScraper(Window* window, const std::queue<ScraperSearchParams>& searches)
 	: mWindow(window), mWndNotification(nullptr), mSearchQueue(searches)
 {
 	mExitCode = ASYNC_IN_PROGRESS;
 	mTotal = (int) mSearchQueue.size();
-	mThreadCount = threadCount;
+	mThreadCount = 1;
 }
 
 void ThreadedScraper::Process()
 {
 	mWndNotification = mWindow->createAsyncNotificationComponent();
 	mWndNotification->updateTitle(GUIICON + _("SCRAPING"));
-
-	for (int i = 0; i < mThreadCount; i++)
-	{
-		if (mSearchQueue.size() == 0)
-			break;
-
-		ScraperThread* thread = new ScraperThread(i);
-		mScraperThreads.push_back(thread);
-		ProcessNextGame(thread);
-	}
+	mWndNotification->updateText(_("PLEASE WAIT"));
 
 	mHandle = new std::thread(&ThreadedScraper::run, this);
 }
@@ -63,7 +54,8 @@ ThreadedScraper::~ThreadedScraper()
 {
 	if (mWndNotification != nullptr)
 	{
-		mWndNotification->closeAfter(1600);
+		int dur = mExitCode == ASYNC_ERROR ? 2000 : 500;
+		mWndNotification->closeAfter(dur);
 		mWndNotification = nullptr;
 	}
 
@@ -175,6 +167,45 @@ void ThreadedScraper::processError(int status, const std::string statusString)
 
 void ThreadedScraper::run()
 {
+	// Provider setup can wait for network I/O (account checks or the first
+	// IGDB token). Keep it off the UI thread so the menu and notification render.
+	try
+	{
+		std::string error;
+		mThreadCount = Scraper::getScraper()->getThreadCount(error);
+		if (mThreadCount < 0)
+		{
+			processSetupError(error);
+			Window* window = mWindow;
+			mWindow->postToUiThread([window, error]
+			{
+				window->pushGui(new GuiMsgBox(window, _("AN ERROR OCCURRED") + std::string(" :\r\n") + error));
+			});
+		}
+		else
+		{
+			if (mThreadCount == 0)
+				mThreadCount = 1;
+
+			for (int i = 0; i < mThreadCount && mExitCode == ASYNC_IN_PROGRESS; i++)
+			{
+				if (mSearchQueue.empty())
+					break;
+
+				ScraperThread* thread = new ScraperThread(i);
+				mScraperThreads.push_back(thread);
+				ProcessNextGame(thread);
+			}
+		}
+	}
+	catch (const std::exception& e)
+	{
+		processSetupError(e.what());
+	}
+
+	if (mExitCode == ASYNC_ERROR)
+		updateUI();
+
 	while (mExitCode == ASYNC_IN_PROGRESS)
 	{
 		if (mPaused)
@@ -293,21 +324,10 @@ void ThreadedScraper::acceptResult(ScraperThread& thread)
 
 void ThreadedScraper::start(Window* window, const std::queue<ScraperSearchParams>& searches)
 {
-	if (ThreadedScraper::mInstance != nullptr)
+	if (ThreadedScraper::mInstance != nullptr || searches.empty())
 		return;
 
-	std::string error;
-	int threadCount = Scraper::getScraper()->getThreadCount(error);
-	if (threadCount < 0)
-	{
-		window->pushGui(new GuiMsgBox(window, _("AN ERROR OCCURRED") + std::string(" :\r\n") + error));
-		return;
-	}
-
-	if (threadCount == 0)
-		threadCount = 1;
-
-	ThreadedScraper::mInstance = new ThreadedScraper(window, searches, threadCount);
+	ThreadedScraper::mInstance = new ThreadedScraper(window, searches);
 
 	try
 	{

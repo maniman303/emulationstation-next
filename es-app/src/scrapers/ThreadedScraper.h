@@ -1,6 +1,7 @@
 #pragma once
 
 #include <thread>
+#include <atomic>
 #include "Scraper.h"
 #include "components/AsyncNotificationComponent.h"
 
@@ -59,7 +60,7 @@ public:
 	static std::string formatGameName(FileData* game);
 
 private:
-	ThreadedScraper(Window* window, const std::queue<ScraperSearchParams>& searches, int threadCount);
+	ThreadedScraper(Window* window, const std::queue<ScraperSearchParams>& searches);
 	~ThreadedScraper();
 
 	void Process();
@@ -87,7 +88,7 @@ private:
 
 	int mTotal;
 	int mThreadCount;
-	int mExitCode;
+	std::atomic<int> mExitCode;
 
 	static bool mPaused;
 	static ThreadedScraper* mInstance;
