@@ -1,9 +1,10 @@
 #!/bin/sh
 set -eu
 
-source_bin="/storage/.config/emulationstation/bin/emulationstation"
-new_bin="${source_bin}.new"
-old_bin="${source_bin}.old"
+source_dir="/storage/.config/emulationstation/bin"
+source_bin="$source_dir/emulationstation"
+runtime_dir="/tmp/emulationstation/bin"
+runtime_bin="$runtime_dir/emulationstation"
 target_bin="/usr/bin/emulationstation"
 frontend_service="essway.service"
 
@@ -14,15 +15,13 @@ frontend_pids()
 
         process_exe=$(readlink "$exe" 2>/dev/null || true)
         case "$process_exe" in
-            "$target_bin"|"$target_bin (deleted)"|"$source_bin"|"$source_bin (deleted)")
+            "$target_bin"|"$target_bin (deleted)"|"$source_bin"|"$source_bin (deleted)"|"$runtime_bin"|"$runtime_bin (deleted)")
                 pid=${exe#/proc/}
                 printf '%s ' "${pid%/exe}"
                 ;;
         esac
     done
 }
-
-[ -f "$source_bin" ] || [ -f "$new_bin" ] || exit 0
 
 service_was_running=false
 if systemctl is-active --quiet "$frontend_service"; then
@@ -80,36 +79,29 @@ while awk -v target="$target_bin" '
     umount "$target_bin"
 done
 
+rm -rf -- "$runtime_dir"
+
+if [ ! -d "$source_dir" ]; then
+    printf 'Deployment directory missing: %s; using the system executable\n' "$source_dir"
+    exit 0
+fi
+
 if [ ! -f "$target_bin" ]; then
     printf 'System executable missing: %s\n' "$target_bin" >&2
     exit 1
 fi
 
-if [ -f "$new_bin" ]; then
-    if [ -e "$source_bin" ] && [ ! -f "$source_bin" ]; then
-        printf 'Existing deployment is not a regular file: %s\n' "$source_bin" >&2
-        exit 1
-    fi
-
-    rm -f "$old_bin"
-    if [ -f "$source_bin" ]; then
-        mv "$source_bin" "$old_bin"
-    fi
-
-    if ! mv "$new_bin" "$source_bin"; then
-        if [ ! -e "$source_bin" ] && [ -f "$old_bin" ]; then
-            mv "$old_bin" "$source_bin" || true
-        fi
-        printf 'Failed to promote staged executable: %s\n' "$new_bin" >&2
-        exit 1
-    fi
+if [ ! -f "$source_bin" ]; then
+    printf 'Deployed executable missing: %s; using the system executable\n' "$source_bin"
+    exit 0
 fi
 
-if [ ! -f "$source_bin" ]; then
-    printf 'Deployed executable missing: %s\n' "$source_bin" >&2
+mkdir -p "$runtime_dir"
+if ! cp -p "$source_bin" "$runtime_bin"; then
+    rm -rf -- "$runtime_dir"
+    printf 'Failed to copy deployed executable to %s\n' "$runtime_bin" >&2
     exit 1
 fi
-
-chmod +x "$source_bin"
-mount --bind "$source_bin" "$target_bin"
-printf 'Mounted %s at %s\n' "$source_bin" "$target_bin"
+chmod +x "$runtime_bin"
+mount --bind "$runtime_bin" "$target_bin"
+printf 'Mounted %s at %s\n' "$runtime_bin" "$target_bin"

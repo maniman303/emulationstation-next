@@ -20,8 +20,8 @@ host key stops deployment so the device identity can be checked.
 
 The script calculates SHA-256 from the local build and checks it against the
 uploaded file, the mounted executable, and the running frontend process.
-Existing `.old` backups are moved aside with a unique `predeploy` suffix before
-the mount helper rotates files.
+The verified upload atomically replaces the storage binary; no `.new` or `.old`
+binaries are needed.
 
 Deploy the latest build:
 
@@ -33,3 +33,15 @@ The script stages the binary in the device's deployment directory, compares
 SHA-256 before promotion, runs the installed mount helper, and verifies the
 service, Sway, bind mount, and running frontend executable hash. It preserves
 the normal launcher and device configuration.
+
+On each run, the mount helper stops the active frontend, clears the previous
+bind mount, and removes `/tmp/emulationstation/bin`. It copies only
+`/storage/.config/emulationstation/bin/emulationstation` to
+`/tmp/emulationstation/bin/emulationstation`, and bind-mounts the copy over
+`/usr/bin/emulationstation`. If the storage directory or its `emulationstation` binary is missing, it leaves
+the system executable without an override. It restarts the frontend if it was active.
+
+To recover from a faulty override, remove
+`/storage/.config/emulationstation/bin/emulationstation` (or the entire `bin`
+directory) and reboot the handheld. The temporary copy is cleared on the next
+helper run, and the original system EmulationStation is used.

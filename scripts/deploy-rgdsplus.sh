@@ -7,8 +7,6 @@ CONFIG=${DEPLOY_CONFIG:-"$ROOT/scripts/deploy-rgdsplus.conf"}
 BINARY="$ROOT/emulationstation"
 REMOTE_DIR="/storage/.config/emulationstation/bin"
 REMOTE_SOURCE="$REMOTE_DIR/emulationstation"
-REMOTE_STAGE="$REMOTE_DIR/emulationstation.new"
-REMOTE_OLD="$REMOTE_DIR/emulationstation.old"
 REMOTE_HELPER="/storage/.config/autostart/mount_emulationstation.sh"
 
 fail()
@@ -57,7 +55,6 @@ scp_device()
 
 UPLOAD_ID="$(date +%Y%m%d-%H%M%S)-$$"
 REMOTE_UPLOAD="$REMOTE_DIR/emulationstation.upload.$UPLOAD_ID"
-REMOTE_PRESERVED_OLD="$REMOTE_OLD.predeploy.$UPLOAD_ID"
 UPLOAD_PENDING=false
 
 cleanup()
@@ -75,16 +72,14 @@ trap 'exit 1' HUP INT TERM
 printf 'Build artifact: %s\nSHA-256: %s\n' "$BINARY" "$BUILD_SHA256"
 
 # Check the deployment identity and device environment before transferring.
-ssh_device sh -s -- "$REMOTE_SOURCE" "$REMOTE_STAGE" "$REMOTE_UPLOAD" "$REMOTE_HELPER" <<'REMOTE_PREFLIGHT'
+ssh_device sh -s -- "$REMOTE_SOURCE" "$REMOTE_UPLOAD" "$REMOTE_HELPER" <<'REMOTE_PREFLIGHT'
 set -eu
 source=$1
-stage=$2
-upload=$3
-helper=$4
+upload=$2
+helper=$3
 [ -d "$(dirname "$source")" ] || { echo 'Deployment directory does not exist' >&2; exit 1; }
 [ -f /usr/bin/emulationstation ] || { echo 'System EmulationStation executable is missing' >&2; exit 1; }
 [ -x "$helper" ] || { echo 'Installed mount helper is missing or not executable' >&2; exit 1; }
-[ ! -e "$stage" ] && [ ! -L "$stage" ] || { echo 'A staged emulationstation.new already exists; preserving it and stopping' >&2; exit 1; }
 [ ! -e "$upload" ] && [ ! -L "$upload" ] || { echo 'Upload path already exists; stopping' >&2; exit 1; }
 if [ -e "$source" ] || [ -L "$source" ]; then
 	[ -f "$source" ] || { echo 'Existing deployment is not a regular file; preserving it and stopping' >&2; exit 1; }
@@ -95,32 +90,21 @@ REMOTE_PREFLIGHT
 UPLOAD_PENDING=true
 scp_device "$BINARY" "root@$DEVICE_IP:$REMOTE_UPLOAD"
 
-# Compare the transfer, promote atomically, preserve the prior backup, and run
-# the normal mount helper. The helper restarts an active frontend.
-ssh_device sh -s -- "$BUILD_SHA256" "$REMOTE_UPLOAD" "$REMOTE_STAGE" "$REMOTE_SOURCE" "$REMOTE_OLD" "$REMOTE_PRESERVED_OLD" <<'REMOTE_DEPLOY'
+# Verify the upload, replace the storage binary atomically, and refresh the
+# runtime copy through the normal mount helper.
+ssh_device sh -s -- "$BUILD_SHA256" "$REMOTE_UPLOAD" "$REMOTE_SOURCE" <<'REMOTE_DEPLOY'
 set -eu
 expected_build=$1
 upload=$2
-stage=$3
-source=$4
-old=$5
-preserved_old=$6
+source=$3
 
 actual_upload=$(sha256sum "$upload" | awk '{print $1}')
-[ "$actual_upload" = "$expected_build" ] || { echo 'Uploaded binary SHA-256 mismatch; refusing promotion' >&2; exit 1; }
+[ "$actual_upload" = "$expected_build" ] || { echo 'Uploaded binary SHA-256 mismatch; refusing replacement' >&2; exit 1; }
 chmod +x "$upload"
-[ ! -e "$stage" ] && [ ! -L "$stage" ] || { echo 'Staging path appeared during transfer; preserving it and stopping' >&2; exit 1; }
-
-if [ -e "$old" ] || [ -L "$old" ]; then
-	[ -f "$old" ] || { echo 'Existing .old backup is not a regular file; preserving it and stopping' >&2; exit 1; }
-	[ ! -e "$preserved_old" ] && [ ! -L "$preserved_old" ] || { echo 'Backup preservation path already exists; stopping' >&2; exit 1; }
+if [ -e "$source" ] || [ -L "$source" ]; then
+    [ -f "$source" ] || { echo 'Existing deployment is not a regular file; stopping' >&2; exit 1; }
 fi
-
-mv "$upload" "$stage"
-if [ -e "$old" ] || [ -L "$old" ]; then
-	mv "$old" "$preserved_old"
-	printf 'Preserved previous .old backup: %s\n' "$preserved_old"
-fi
+mv -f "$upload" "$source"
 
 service_was_active=false
 if systemctl is-active --quiet essway.service; then
@@ -144,7 +128,7 @@ for exe in /proc/[0-9]*/exe; do
 	[ -e "$exe" ] || continue
 	target=$(readlink "$exe" 2>/dev/null || true)
 	case "$target" in
-		/usr/bin/emulationstation*|/storage/.config/emulationstation/bin/emulationstation*)
+		/usr/bin/emulationstation*|/storage/.config/emulationstation/bin/emulationstation*|/tmp/emulationstation/bin/emulationstation*)
 			pid=${exe#/proc/}; pid=${pid%/exe}
 			running_hash=$(sha256sum "/proc/$pid/exe" | awk '{print $1}')
 			[ "$running_hash" = "$expected_build" ] || continue
