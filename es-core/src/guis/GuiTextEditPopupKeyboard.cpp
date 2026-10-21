@@ -206,7 +206,7 @@ GuiTextEditPopupKeyboard::GuiTextEditPopupKeyboard(Window* window, const std::st
 				if (lower == "SHIFT")
 				{
 					// Special case for shift key
-					mShiftButton = std::make_shared<ButtonComponent>(mWindow, _U("\uF176"), _("SHIFTS FOR UPPER, LOWER, AND SPECIAL"), [this] { shiftKeys(); }, false);					
+					mShiftButton = std::make_shared<ButtonComponent>(mWindow, _U("\uF176"), _("SELECT"), [this] { shiftKeys(); }, false);
 					button = mShiftButton;
 				}
 				else if (lower == "ALT")
@@ -463,7 +463,7 @@ std::vector<HelpPrompt> GuiTextEditPopupKeyboard::getHelpPrompts()
 
 std::shared_ptr<ButtonComponent> GuiTextEditPopupKeyboard::makeButton(const std::string& key, const std::string& shiftedKey, const std::string& altedKey, const std::string& altedShiftedKey)
 {
-	std::shared_ptr<ButtonComponent> button = std::make_shared<ButtonComponent>(mWindow, key, key, [this, key, shiftedKey, altedKey, altedShiftedKey]
+	std::shared_ptr<ButtonComponent> button = std::make_shared<ButtonComponent>(mWindow, key, _("SELECT"), [this, key, shiftedKey, altedKey, altedShiftedKey]
 	{						
 		if (key == _U("\uF058") || key.find("OK") != std::string::npos)
 		{	
