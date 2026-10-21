@@ -128,7 +128,7 @@ for exe in /proc/[0-9]*/exe; do
 	[ -e "$exe" ] || continue
 	target=$(readlink "$exe" 2>/dev/null || true)
 	case "$target" in
-		/usr/bin/emulationstation*|/storage/.config/emulationstation/bin/emulationstation*|/tmp/emulationstation/bin/emulationstation*)
+		/usr/bin/emulationstation*|/storage/.config/emulationstation/bin/emulationstation*|/storage/mount/emulationstation/emulationstation*)
 			pid=${exe#/proc/}; pid=${pid%/exe}
 			running_hash=$(sha256sum "/proc/$pid/exe" | awk '{print $1}')
 			[ "$running_hash" = "$expected_build" ] || continue

@@ -3,7 +3,7 @@ set -eu
 
 source_dir="/storage/.config/emulationstation/bin"
 source_bin="$source_dir/emulationstation"
-runtime_dir="/tmp/emulationstation/bin"
+runtime_dir="/storage/mount/emulationstation"
 runtime_bin="$runtime_dir/emulationstation"
 target_bin="/usr/bin/emulationstation"
 frontend_service="essway.service"

@@ -35,13 +35,14 @@ service, Sway, bind mount, and running frontend executable hash. It preserves
 the normal launcher and device configuration.
 
 On each run, the mount helper stops the active frontend, clears the previous
-bind mount, and removes `/tmp/emulationstation/bin`. It copies only
+bind mount, and removes `/storage/mount/emulationstation`. It creates that
+directory if needed, copies only
 `/storage/.config/emulationstation/bin/emulationstation` to
-`/tmp/emulationstation/bin/emulationstation`, and bind-mounts the copy over
+`/storage/mount/emulationstation/emulationstation`, and bind-mounts the copy over
 `/usr/bin/emulationstation`. If the storage directory or its `emulationstation` binary is missing, it leaves
 the system executable without an override. It restarts the frontend if it was active.
 
 To recover from a faulty override, remove
 `/storage/.config/emulationstation/bin/emulationstation` (or the entire `bin`
-directory) and reboot the handheld. The temporary copy is cleared on the next
+directory) and reboot the handheld. The runtime copy is cleared on the next
 helper run, and the original system EmulationStation is used.
