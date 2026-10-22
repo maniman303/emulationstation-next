@@ -3,6 +3,7 @@
 #include "Window.h"
 #include "InputManager.h"
 #include "LocaleES.h"
+#include "Sound.h"
 
 #define PADDING_PX (Renderer::getScreenWidth() * 0.015f)
 #define SELECTOR_PX (Renderer::getScreenWidth() * 0.0025f)
@@ -98,6 +99,14 @@ void ComponentTab::update(int deltaTime)
 		for(auto it = mEntries.at(mCursor).data.elements.cbegin(); it != mEntries.at(mCursor).data.elements.cend(); it++)
 			it->component->update(deltaTime);
 	}
+}
+
+void ComponentTab::onScroll(int /*amt*/)
+{
+	const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
+	auto sound = path.empty() ? nullptr : Sound::get(path);
+	if (sound)
+		sound->play();
 }
 
 void ComponentTab::onCursorChanged(const CursorState& state)
@@ -410,6 +419,8 @@ bool ComponentTab::onMouseClick(int button, bool pressed, int x, int y)
 			if (mHotTab >= 0)
 			{
 				float camOffset = mCameraOffset;
+				if (mCursor != mHotTab)
+					onScroll(1);
 				mCursor = mHotTab;
 				onCursorChanged(CURSOR_STOPPED);
 				mCameraOffset = camOffset;

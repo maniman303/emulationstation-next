@@ -1,4 +1,5 @@
 #include "guis/GuiSettings.h"
+#include "Sound.h"
 
 #include "views/ViewController.h"
 #include "Settings.h"
@@ -6,6 +7,7 @@
 #include "Window.h"
 #include "LocaleES.h"
 #include "SystemConf.h"
+#include "ThemeData.h"
 #include "guis/GuiTextEditPopup.h"
 #include "guis/GuiTextEditPopupKeyboard.h"
 #include "guis/GuiMsgBox.h"
@@ -71,6 +73,13 @@ GuiSettings::~GuiSettings()
 
 void GuiSettings::close()
 {
+	//TODO: Add here cancel sound play
+	//Problems: systems list, quick access, edit metadata
+	const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
+	auto sound = path.empty() ? nullptr : Sound::get(path);
+	if (sound)
+		sound->play();
+
 	save();
 
 	if (mOnFinalizeFunc != nullptr)

@@ -6,6 +6,7 @@
 #include "GuiComponent.h"
 
 class TextCache;
+struct MenuElement;
 
 class ButtonComponent : public GuiComponent
 {
@@ -20,6 +21,7 @@ public:
 	void render(const Transform4x4f& parentTrans) override;
 
 	void setText(const std::string& text, const std::string& helpText, bool upperCase = true);
+	void setMenuStyle(const MenuElement& style);
 
 	inline const std::string& getText() const { return mText; };
 	inline const std::function<void()>& getPressedFunc() const { return mPressedFunc; };
@@ -67,6 +69,7 @@ private:
 	unsigned int mColorFocused;
 
 	bool mRenderNonFocusedBackground;
+	unsigned int mNonFocusedBackgroundColor = 0x60606025;
 	bool mMousePressed;
 };
 

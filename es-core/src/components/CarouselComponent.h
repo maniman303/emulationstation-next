@@ -77,6 +77,8 @@ public:
 		mImageSource = source;
 	}
 
+	void onActivated();
+
 	void setDefaultBackground(unsigned int color, unsigned int colorEnd, bool gradientHorizontal);
 
 	std::string getThemeTypeName() override { return mThemeClass; }
@@ -110,6 +112,7 @@ public:
 
 protected:
 	void onCursorChanged(const CursorState& state) override;
+	void onScroll(int amt) override;
 
 private:
 	void	 clearEntries();
@@ -160,6 +163,7 @@ private:
 	Vector2f		mLogoPos;
 	std::string		mDefaultTransition;
 	std::string		mScrollSound;
+	std::string mSelectSound;
 	float			mTransitionSpeed;
 	float			mMinLogoOpacity;
 

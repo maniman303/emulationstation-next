@@ -2,6 +2,7 @@
 
 #include "resources/Font.h"
 #include "LocaleES.h"
+#include "Sound.h"
 #include "Window.h"
 #include "utils/HtmlColor.h"
 
@@ -139,8 +140,11 @@ bool SliderComponent::input(InputConfig* config, Input input)
 				mMoveAccumulator = -MOVE_REPEAT_DELAY;
 			}
 
+			playSelect();
+
 			mMoveRate = -mSingleIncrement;
 			mMoveAccumulator = -MOVE_REPEAT_DELAY;
+			
 			return input.value;
 		}
 		else
@@ -150,7 +154,7 @@ bool SliderComponent::input(InputConfig* config, Input input)
 			return input.value;
 		}
 	}
-	if(config->isMappedLike("right", input))
+	if (config->isMappedLike("right", input))
 	{
 		if (input.value)
 		{
@@ -167,8 +171,11 @@ bool SliderComponent::input(InputConfig* config, Input input)
 				mMoveAccumulator = -MOVE_REPEAT_DELAY;
 			}
 
+			playSelect();
+
 			mMoveRate = mSingleIncrement;
 			mMoveAccumulator = -MOVE_REPEAT_DELAY;
+			
 			return input.value;
 		}
 		else
@@ -405,4 +412,14 @@ void SliderComponent::onMouseMove(int x, int y)
 	{
 		setValue(value);
 	}
+	
+	playSelect();
+}
+
+void SliderComponent::playSelect()
+{
+	const auto& path = ThemeData::getMenuTheme()->Group.selectSound;
+	auto sound = path.empty() ? nullptr : Sound::get(path);
+	if (sound)
+		sound->play();
 }

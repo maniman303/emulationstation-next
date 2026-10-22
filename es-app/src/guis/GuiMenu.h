@@ -69,6 +69,8 @@ private:
         void openFormatDriveSettings();
         void exitKidMode();
 
+        void close();
+
 #ifdef BATOCERA
         void openUnmountDriveSettings();
 #endif

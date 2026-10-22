@@ -28,6 +28,7 @@ based on 640x480
    -->
    <view name="system" ifSubset="system-view-artwork:default|noir|nintendont|circuit|outline|custom">
       <carousel name="systemcarousel">
+         <selectSound>./_inc/sounds/click.wav</selectSound>
          <logoSize>1.025 1.025</logoSize>
          <maxLogoCount>4</maxLogoCount>
       </carousel>
@@ -37,6 +38,7 @@ based on 640x480
    </view>
    <view name="system" ifSubset="system-view-artwork:custom-fullscreen">
       <carousel name="systemcarousel">
+         <selectSound>./_inc/sounds/click.wav</selectSound>
          <logoSize>0.6 0.4</logoSize>
       </carousel>
    </view>
@@ -54,6 +56,7 @@ based on 640x480
          <size>0.359375 0.104166666666667</size><!-- 230 50 -->
       </text>
       <textlist name="gamelist">
+         <cancelSound>./_inc/sounds/scroll.wav</cancelSound>
          <x>0.046875</x><!-- 30 -->
       </textlist>
    </view>
@@ -71,6 +74,7 @@ based on 640x480
          <x>0.5</x><!-- 50% -->
       </text>
       <textlist name="gamelist">
+         <cancelSound>./_inc/sounds/scroll.wav</cancelSound>
          <w>0.890625</w><!-- 570 -->
       </textlist>
    </view>
@@ -91,6 +95,7 @@ based on 640x480
          <x>0.25</x><!-- 25% -->
       </text>
       <textlist name="gamelist">
+         <cancelSound>./_inc/sounds/scroll.wav</cancelSound>
          <w>0.390625</w><!-- 250 -->
       </textlist>
    </view>

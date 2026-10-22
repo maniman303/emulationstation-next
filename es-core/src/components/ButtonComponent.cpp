@@ -30,6 +30,18 @@ ButtonComponent::ButtonComponent(Window* window, const std::string& text, const 
 	updateImage();
 }
 
+void ButtonComponent::setMenuStyle(const MenuElement& style)
+{
+	mFont = style.font;
+	mTextColorUnfocused = style.color;
+	mTextColorFocused = style.selectedColor;
+	mColor = style.color;
+	mColorFocused = style.selectorColor;
+	mNonFocusedBackgroundColor = style.backgroundColor;
+	setText(mText, mHelpText, false);
+	updateImage();
+}
+
 void ButtonComponent::onSizeChanged()
 {
 	GuiComponent::onSizeChanged();
@@ -140,7 +152,7 @@ void ButtonComponent::render(const Transform4x4f& parentTrans)
 	else
 	{
 		Renderer::setMatrix(trans);
-		Renderer::drawRect(mPadding.x(), mPadding.y(), mSize.x() - mPadding.x() - mPadding.z(), mSize.y() - mPadding.y() - mPadding.w(), 0x60606025);
+		Renderer::drawRect(mPadding.x(), mPadding.y(), mSize.x() - mPadding.x() - mPadding.z(), mSize.y() - mPadding.y() - mPadding.w(), mNonFocusedBackgroundColor);
 	}
 
 	if (mMousePressed && mIsMouseOver)

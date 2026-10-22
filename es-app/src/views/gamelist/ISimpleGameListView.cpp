@@ -227,6 +227,13 @@ void ISimpleGameListView::update(const int deltaTime)
 
 void ISimpleGameListView::goBack()
 {
+	auto sound = getListCancelSound();
+	if (returnToParent() && sound != nullptr)
+		sound->play();
+}
+
+bool ISimpleGameListView::returnToParent()
+{
 	if (mCursorStack.size())
 	{
 		auto top = mCursorStack.top();
@@ -240,8 +247,9 @@ void ISimpleGameListView::goBack()
 		{
 			populateList(folder->getChildrenListToDisplay());
 			setCursor(top);
-			Sound::getFromTheme(getTheme(), getName(), "back")->play();
 		}
+		else
+			return false;
 	}
 	else if (mPopupSelfReference)
 	{
@@ -260,7 +268,9 @@ void ISimpleGameListView::goBack()
 			systemToView = CollectionSystemManager::get()->getSystemToView(systemToView);
 
 		ViewController::get()->goToSystemView(systemToView);
-	}	
+	}
+
+	return true;
 }
 
 bool ISimpleGameListView::input(InputConfig* config, Input input)
@@ -423,7 +433,9 @@ void ISimpleGameListView::launchSelectedGame()
 
 		populateList(folder->getChildrenListToDisplay());
 		setCursor(top);
-		Sound::getFromTheme(getTheme(), getName(), "back")->play();
+		auto sound = getListCancelSound();
+		if (sound != nullptr)
+			sound->play();
 	}
 	else
 	{
@@ -444,7 +456,10 @@ void ISimpleGameListView::launchSelectedGame()
 			}
 			else
 			{
-				Sound::getFromTheme(getTheme(), getName(), "launch")->play();
+				auto sound = Sound::getFromTheme(getTheme(), getName(), "launch");
+				if (sound != nullptr)
+					sound->play();
+				
 				launch(cursor);
 			}
 		}

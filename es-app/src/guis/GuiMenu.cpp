@@ -468,19 +468,31 @@ bool GuiMenu::input(InputConfig* config, Input input)
 
 	if((config->isMappedTo(BUTTON_BACK, input) || config->isMappedTo("start", input)) && input.value != 0)
 	{
-		delete this;
+		//TODO: Run close method
+		close();
 		return true;
 	}
 
 	return false;
 }
 
+void GuiMenu::close()
+{
+	const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
+	auto sound = path.empty() ? nullptr : Sound::get(path);
+	if (sound)
+		sound->play();
+	
+	delete this;
+}
+
 std::vector<HelpPrompt> GuiMenu::getHelpPrompts()
 {
 	std::vector<HelpPrompt> prompts;
 	prompts.push_back(HelpPrompt("up/down", _("CHOOSE"))); 
-	prompts.push_back(HelpPrompt(BUTTON_OK, _("SELECT"))); 
-	prompts.push_back(HelpPrompt("start", _("CLOSE"), [&] { delete this; }));
+	prompts.push_back(HelpPrompt(BUTTON_OK, _("SELECT")));
+	//TODO: make this a method?
+	prompts.push_back(HelpPrompt("start", _("CLOSE"), [&] { close(); }));
 	return prompts;
 }
 

@@ -1,6 +1,7 @@
 #include "components/ComponentList.h"
 #include "LocaleES.h"
 #include "TextToSpeech.h"
+#include "Sound.h"
 
 #include "components/TextComponent.h"
 #include "components/SwitchComponent.h"
@@ -139,46 +140,46 @@ void ComponentList::onFocusGained()
 	}
 }
 
+void ComponentListRow::onActivated()
+{
+	const auto& path = ThemeData::getMenuTheme()->Group.selectSound;
+	auto sound = path.empty() ? nullptr : Sound::get(path);
+	if (sound)
+		sound->play();
+}
+
 bool ComponentList::input(InputConfig* config, Input input)
 {
 	if (mReadOnly || size() == 0)
 		return false;
 
-	// give it to the current row's input handler
-	if(mEntries.at(mCursor).data.input_handler)
-	{
-		if(mEntries.at(mCursor).data.input_handler(config, input))
-			return true;
-	}else{
-		// no input handler assigned, do the default, which is to give it to the rightmost element in the row
-		auto& row = mEntries.at(mCursor).data;
-		if(row.elements.size())
-		{
-			if (EsLocale::isRTL())
-			{
-				if (row.elements.front().component->input(config, input))
-					return true;
-			}
-			else
-			{
-				if (row.elements.back().component->input(config, input))
-					return true;
-			}
-		}
-	}
+	const auto handler = mEntries.at(mCursor).data.input_handler;
+	if (handler && handler(config, input))
+		return true;
+
+	std::shared_ptr<GuiComponent> component;
+	const auto& row = mEntries.at(mCursor).data;
+	if (!row.elements.empty())
+		component = EsLocale::isRTL() ? row.elements.front().component : row.elements.back().component;
+	
+	if (component && component->input(config, input))
+		return true;
 
 	// input handler didn't consume the input - try to scroll
-	if(config->isMappedLike("up", input))
+	if (config->isMappedLike("up", input))
 	{
 		return listInput(input.value != 0 ? -1 : 0);
-	}else if(config->isMappedLike("down", input))
+	}
+	else if (config->isMappedLike("down", input))
 	{
 		return listInput(input.value != 0 ? 1 : 0);
 
-	}else if(config->isMappedTo("leftshoulder", input))
+	}
+	else if (config->isMappedTo("leftshoulder", input))
 	{
 		return listInput(input.value != 0 ? -6 : 0);
-	}else if(config->isMappedTo("rightshoulder", input)){
+	}
+	else if (config->isMappedTo("rightshoulder", input)){
 		return listInput(input.value != 0 ? 6 : 0);
 	}
 
@@ -206,6 +207,14 @@ void ComponentList::update(int deltaTime)
 				it->component->update(deltaTime);
 		}
 	}
+}
+
+void ComponentList::onScroll(int /*amt*/)
+{
+	const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
+	auto sound = path.empty() ? nullptr : Sound::get(path);
+	if (sound)
+		sound->play();
 }
 
 void ComponentList::onCursorChanged(const CursorState& state)
@@ -641,6 +650,8 @@ bool ComponentList::onMouseClick(int button, bool pressed, int x, int y)
 			if (mHotRow >= 0)
 			{
 				float camOffset = mCameraOffset;
+				if (mCursor != mHotRow)
+					onScroll(1);
 				mCursor = mHotRow;
 				onCursorChanged(CURSOR_STOPPED);
 				mCameraOffset = camOffset;
@@ -714,6 +725,7 @@ bool ComponentList::onMouseWheel(int delta)
 
 	if (newCursor >= 0 && newCursor < mEntries.size() && newCursor != mCursor)
 	{
+		onScroll(1);
 		mCursor = newCursor;
 		onCursorChanged(CURSOR_STOPPED);
 	}

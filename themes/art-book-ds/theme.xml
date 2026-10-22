@@ -23,8 +23,8 @@ https://github.com/anthonycaccese/art-book-next-es
    ///
    -->
    <subset name="distribution" displayName="Distribution">
-      <include name="batocera" displayName="Batocera/Knulli" />
       <include name="rocknix" displayName="RockNIX" />
+      <include name="batocera" displayName="Batocera/Knulli" />
       <include name="retrobat" displayName="Retrobat" />
    </subset>
 
@@ -369,6 +369,7 @@ https://github.com/anthonycaccese/art-book-next-es
          <saturation>${systemArtSaturation}</saturation>
       </image>
       <carousel name="systemcarousel">
+         <selectSound>./_inc/sounds/click.wav</selectSound>
          <origin>0 0</origin>
          <pos>0 0</pos>
          <size>1 1</size>
@@ -477,6 +478,7 @@ https://github.com/anthonycaccese/art-book-next-es
          <color>${systemLogoColor}</color>
       </text>
       <carousel name="systemcarousel">
+         <selectSound>./_inc/sounds/click.wav</selectSound>
          <origin>0 0</origin>
          <pos>0 0</pos>
          <size>1 1</size>
@@ -529,6 +531,7 @@ https://github.com/anthonycaccese/art-book-next-es
          <zIndex>5</zIndex>
       </text>
       <textlist name="gamelist">
+         <cancelSound>./_inc/sounds/scroll.wav</cancelSound>
          <origin>0 0</origin>
          <y>0.25520833</y><!-- 122.5 -->
          <h ifHelpPrompts="true">0.57083333</h><!-- 274 -->
@@ -574,6 +577,7 @@ https://github.com/anthonycaccese/art-book-next-es
          <size>1 1</size>
       </image>
       <textlist name="gamelist">
+         <cancelSound>./_inc/sounds/scroll.wav</cancelSound>
          <alignment>center</alignment>
       </textlist>
    </view>
@@ -755,6 +759,21 @@ https://github.com/anthonycaccese/art-book-next-es
          <fontSize ifSubset="font-size:xlarge">0.0375</fontSize><!-- 18 -->
          <color>ffffff77</color>
       </menuTextSmall>
+      <menuText name="keyboard">
+         <fontPath>${fontBold}</fontPath>
+         <fontSize ifSubset="font-size:small|default|large">0.03333333</fontSize><!-- 16 -->
+         <fontSize ifSubset="font-size:xlarge">0.04166667</fontSize><!-- 20 -->
+         <color>ffffff77</color>
+         <backgroundColor>60606025</backgroundColor>
+         <separatorColor>00000000</separatorColor>
+         <selectedColor>ffffff</selectedColor>
+         <selectorColor>${menuSelectorColor}</selectorColor>
+      </menuText>
+      <menuGroup name="keyboard">
+         <scrollSound>./_inc/sounds/click.wav</scrollSound>
+         <selectSound>./_inc/sounds/click.wav</selectSound>
+         <cancelSound>./_inc/sounds/scroll.wav</cancelSound>
+      </menuGroup>
       <menuGroup name="menugroup">
          <fontPath>${fontRegular}</fontPath>
          <fontSize ifSubset="font-size:small|default|large">0.03333333</fontSize><!-- 16 -->
@@ -763,6 +782,9 @@ https://github.com/anthonycaccese/art-book-next-es
          <separatorColor>ffffff99</separatorColor>
          <backgroundColor>00000000</backgroundColor>
          <lineSpacing>2</lineSpacing>
+         <selectSound>./_inc/sounds/click.wav</selectSound>
+         <scrollSound>./_inc/sounds/scroll.wav</scrollSound>
+         <cancelSound>./_inc/sounds/scroll.wav</cancelSound>
       </menuGroup>
       <menuTextEdit name="menutextedit">
          <inactive>./_inc/images/menu-textinput.png</inactive>

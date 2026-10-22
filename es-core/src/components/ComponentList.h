@@ -52,6 +52,8 @@ struct ComponentListRow
 			elements.push_back(ComponentListElement(component, resize_width));
 	}
 
+	static void onActivated();
+
 	// Utility method for making an input handler for "when the users presses A on this, do func."
 	inline void makeAcceptInputHandler(const std::function<void()>& func, bool onButtonRelease = false)
 	{
@@ -62,7 +64,9 @@ struct ComponentListRow
 		{
 			if(config->isMappedTo(BUTTON_OK, input) && (onButtonRelease ? input.value == 0 : input.value != 0)) 
 			{
-				func();
+				const auto action = func;
+				onActivated();
+				action();
 				return true;
 			}
 			return false;
@@ -113,6 +117,7 @@ public:
 
 protected:
 	void onCursorChanged(const CursorState& state) override;
+	void onScroll(int amt) override;
 
 	virtual int onBeforeScroll(int cursor, int direction) override
 	{ 

@@ -82,6 +82,11 @@ public:
 
 	std::string getThemeTypeName() override { return "textlist"; }
 
+	std::shared_ptr<Sound> getCancelSound() const
+	{
+		return mCancelSound.empty() ? nullptr : Sound::get(mCancelSound);
+	}
+
 	inline void setAlignment(Alignment align) { mAlignment = align; }
 
 	inline void setCursorChangedCallback(const std::function<void(CursorState state)>& func) { mCursorChangedCallback = func; }
@@ -164,6 +169,7 @@ private:
 	bool mHasBonusSelectedColor = false;
 
 	std::string mScrollSound;
+	std::string mCancelSound;
 	static const unsigned int COLOR_ID_COUNT = 2;
 	unsigned int mColors[COLOR_ID_COUNT];
 
@@ -725,6 +731,8 @@ void TextListComponent<T>::applyTheme(const std::shared_ptr<ThemeData>& theme, c
 	const float selectorHeight = Math::max(mFont->getHeight(1.0), (float)mFont->getSize()) * mLineSpacing;
 	setSelectorHeight(selectorHeight);
 
+	if (properties & SOUND)
+		mCancelSound = elem->has("cancelSound") ? elem->get<std::string>("cancelSound") : "";
 	if (properties & SOUND && elem->has("scrollSound"))
 		mScrollSound = elem->get<std::string>("scrollSound");
 

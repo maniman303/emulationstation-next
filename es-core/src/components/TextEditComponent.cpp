@@ -4,6 +4,7 @@
 #include "utils/StringUtil.h"
 #include "LocaleES.h"
 #include "Window.h"
+#include "Sound.h"
 
 #define TEXT_PADDING_HORIZ 10
 #define TEXT_PADDING_VERT 2
@@ -74,6 +75,8 @@ void TextEditComponent::textInput(const char* text)
 		{
 			if (mCursor > 0)
 			{
+				if (mDeleteSound)
+					mDeleteSound->play();
 				size_t newCursor = Utils::String::prevCursor(mText, mCursor);
 				mText.erase(mText.begin() + newCursor, mText.begin() + mCursor);
 				mCursor = (unsigned int)newCursor;

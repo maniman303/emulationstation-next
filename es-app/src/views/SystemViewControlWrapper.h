@@ -32,6 +32,11 @@ public:
 		mCarousel = dynamic_cast<CarouselComponent*>(mComp);
 	}
 
+	void onActivated()
+	{
+		if (mCarousel) mCarousel->onActivated();
+	}
+
 	bool isCarousel() { return mCarousel != nullptr; }
 	bool isGrid()     { return mGrid != nullptr; }
 	bool isTextList() { return mText != nullptr; }

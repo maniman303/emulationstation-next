@@ -51,7 +51,8 @@ private:
 	std::shared_ptr<TextComponent> mTitle;
 	std::shared_ptr<TextEditComponent> mText;
 	std::shared_ptr<ComponentGrid> mKeyboardGrid;
-	std::shared_ptr<Sound> mNavigationSound;
+	std::shared_ptr<Sound> mScrollSound;
+	std::shared_ptr<Sound> mSelectSound;
 	Input mNavigationInput;
 	Vector2i mNavigationDirection = Vector2i::Zero();
 	int mNavigationRepeatTimer = 0;

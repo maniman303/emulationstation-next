@@ -2,6 +2,7 @@
 
 #include "resources/Font.h"
 #include "LocaleES.h"
+#include "components/ComponentList.h"
 
 SwitchComponent::SwitchComponent(Window* window, bool state, bool hasAuto, bool autoState) : GuiComponent(window), mImage(window), mState(state), mInitialState(state), mHasAuto(hasAuto), mAutoState(autoState), mInitialAutoState(autoState)
 {
@@ -39,49 +40,57 @@ void SwitchComponent::onSizeChanged()
 
 bool SwitchComponent::input(InputConfig* config, Input input)
 {
-	if(config->isMappedTo(BUTTON_OK, input) && input.value)
+	if (!input.value)
+		return false;
+
+	bool res = false;
+
+	if (config->isMappedTo(BUTTON_OK, input))
+		res = changeState(0);
+	else if (config->isMappedLike("left", input))
+		res = changeState(-1);
+	else if (config->isMappedLike("right", input))
+		res = changeState(1);
+	
+	if (res)
+		ComponentListRow::onActivated();
+	
+	return res;
+}
+
+bool SwitchComponent::changeState(int direction)
+{
+	if (direction < 0 && !mState && !(mHasAuto && mAutoState))
+		return false;
+	if (direction > 0 && mState && !(mHasAuto && mAutoState))
+		return false;
+	
+	if (direction == 0)
 	{
-		if(mHasAuto) {
-			if(mAutoState) {
+		if (mHasAuto)
+		{
+			if (mAutoState)
+			{
 				mAutoState = false;
-				mState     = true;
-			} else if(mState) {
-			       mState = false;
-			} else {
-			       mAutoState = true;
+				mState = true;
 			}
-		} else {
+			else if (mState)
+				mState = false;
+			else
+				mAutoState = true;
+		}
+		else
 			mState = !mState;
-		}
-		onStateChanged();
-		return true;
 	}
-
-	if (config->isMappedLike("left", input) && input.value && (mState || (mHasAuto && mAutoState)))
+	else if (mHasAuto && !mAutoState)
+		mAutoState = true;
+	else
 	{
-		if(mHasAuto && !mAutoState) {
-			mAutoState = true;
-		} else {
-			mAutoState = false;
-			mState = false;
-		}
-		onStateChanged();
-		return true;
+		mAutoState = false;
+		mState = direction > 0;
 	}
-
-	if (config->isMappedLike("right", input) && input.value && (!mState || (mHasAuto && mAutoState)))
-	{
-		if(mHasAuto && !mAutoState) {
-			mAutoState = true;
-		} else {
-			mAutoState = false;
-			mState = true;
-		}
-		onStateChanged();
-		return true;
-	}
-
-	return false;
+	onStateChanged();
+	return true;
 }
 
 void SwitchComponent::render(const Transform4x4f& parentTrans)

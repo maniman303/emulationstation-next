@@ -252,6 +252,13 @@ void SystemView::populate()
 		grid->preloadTiles();
 }
 
+void SystemView::openSelectedSystem()
+{
+	mCarousel.stopScrolling();
+	mCarousel.onActivated();
+	ViewController::get()->goToGameList(getSelected());
+}
+
 void SystemView::goToSystem(SystemData* system, bool animate)
 {
 	mLastCursor = -1;
@@ -486,8 +493,7 @@ bool SystemView::input(InputConfig* config, Input input)
 
 		if (config->isMappedTo(BUTTON_OK, input))
 		{
-			mCarousel.stopScrolling();
-			ViewController::get()->goToGameList(getSelected());
+			openSelectedSystem();
 			return true;
 		}
 
@@ -892,7 +898,7 @@ std::vector<HelpPrompt> SystemView::getHelpPrompts()
 {
 	std::vector<HelpPrompt> prompts = mCarousel.getHelpPrompts();
 
-	prompts.push_back(HelpPrompt(BUTTON_OK, _("SELECT"), [&] {ViewController::get()->goToGameList(getSelected()); }));
+	prompts.push_back(HelpPrompt(BUTTON_OK, _("SELECT"), [&] { openSelectedSystem(); }));
 
 	bool netPlay = SystemData::isNetplayActivated() && SystemConf::getInstance()->getBool("global.netplay");
 
@@ -1612,8 +1618,7 @@ bool SystemView::onAction(const std::string& action)
 
 	if (action == "launch" || action == "open")
 	{
-		mCarousel.stopScrolling();
-		ViewController::get()->goToGameList(getSelected());
+		openSelectedSystem();
 		return true;
 	}
 

@@ -155,7 +155,7 @@ private:
 				mMenu.addRow(row, (!mParent->mMultiSelect && it->selected), false);
 			}
 
-			mMenu.addButton(_("BACK"), _("accept"), [this] { delete this; }); 
+			mMenu.addButton(_("BACK"), _("accept"), [this] { delete this; });
 
 			if (mParent->mMultiSelect)
 			{
@@ -292,38 +292,10 @@ public:
 
 				return true;
 			}
-			if(!mMultiSelect)
+			if (!mMultiSelect && (config->isMappedLike("left", input) || config->isMappedLike("right", input)))
 			{
-				if(config->isMappedLike("left", input))
-				{
-					if (mEntries.size() == 0)
-						return true;
-
-					// move selection to previous
-					unsigned int i = getSelectedId();
-					int next = (int)i - 1;
-					if(next < 0)
-						next += (int)mEntries.size();
-
-					mEntries.at(i).selected = false;
-					mEntries.at(next).selected = true;
-					onSelectedChanged();
-					return true;
-
-				}else if(config->isMappedLike("right", input))
-				{
-					if (mEntries.size() == 0)
-						return true;
-
-					// move selection to next
-					unsigned int i = getSelectedId();
-					int next = (i + 1) % mEntries.size();
-					mEntries.at(i).selected = false;
-					mEntries.at(next).selected = true;
-					onSelectedChanged();
-					return true;
-
-				}
+				changeSelection(config->isMappedLike("left", input) ? -1 : 1);
+				return true;
 			}
 		}
 		return GuiComponent::input(config, input);
@@ -566,8 +538,25 @@ private:
 		return 0;
 	}
 
+	void changeSelection(int direction)
+	{
+		if (mEntries.empty())
+			return;
+		const int current = getSelectedId();
+		const int next = (current + direction + static_cast<int>(mEntries.size())) % mEntries.size();
+		if (current == next)
+			return;
+		ComponentListRow::onActivated();
+		mEntries.at(current).selected = false;
+		mEntries.at(next).selected = true;
+		onSelectedChanged();
+	}
+
 	void open()
 	{
+		if (mEntries.empty())
+			return;
+		ComponentListRow::onActivated();
 		mWindow->pushGui(new OptionListPopup(mWindow, this, mName, mAddRowCallback));
 	}
 

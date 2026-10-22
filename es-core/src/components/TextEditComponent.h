@@ -7,6 +7,7 @@
 
 class Font;
 class TextCache;
+class Sound;
 
 // Used to enter text.
 class TextEditComponent : public GuiComponent
@@ -31,6 +32,7 @@ public:
 	inline const std::shared_ptr<Font>& getFont() const { return mFont; }
 
 	void setCursor(size_t pos);
+	void setDeleteSound(const std::shared_ptr<Sound>& sound) { mDeleteSound = sound; }
 
 	virtual std::vector<HelpPrompt> getHelpPrompts() override;
 
@@ -50,6 +52,7 @@ private:
 	Vector2f getTextAreaPos() const;
 	Vector2f getTextAreaSize() const;
 
+	std::shared_ptr<Sound> mDeleteSound;
 	std::string mText;
 	bool mFocused;
 	bool mEditing;

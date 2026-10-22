@@ -19,8 +19,9 @@ in the values. It requires `sshpass`, `ssh`, and `scp` on the local host.
 Set `DEPLOY_CONFIG` to use another connection config file.
 
 Files are uploaded to
-`/storage/.config/emulationstation/themes/art-book-ds`. Existing files with
-matching names are replaced; extra remote files are retained. The script
+`/storage/.config/emulationstation/themes/art-book-ds`. The existing
+`art-book-ds` directory is removed first, then the local theme is uploaded in
+full, including hidden files. A symlink destination is refused. The script
 does not select the theme or restart the frontend. Select `art-book-ds` in
 EmulationStation's theme settings after deployment.
 

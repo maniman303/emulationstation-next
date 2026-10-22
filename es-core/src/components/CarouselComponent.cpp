@@ -180,6 +180,20 @@ void CarouselComponent::update(int deltaTime)
 	GuiComponent::update(deltaTime);
 }
 
+void CarouselComponent::onActivated()
+{
+	auto sound = mSelectSound.empty() ? nullptr : Sound::get(mSelectSound);
+	if (sound)
+		sound->play();
+}
+
+void CarouselComponent::onScroll(int /*amt*/)
+{
+	auto sound = mScrollSound.empty() ? nullptr : Sound::get(mScrollSound);
+	if (sound)
+		sound->play();
+}
+
 void CarouselComponent::onCursorChanged(const CursorState& state)
 {
 	// update help style
@@ -226,9 +240,6 @@ void CarouselComponent::onCursorChanged(const CursorState& state)
 	
 	if (mLastCursor == mCursor)
 		return;
-
-	if (!mScrollSound.empty())
-		Sound::get(mScrollSound)->play();
 
 	ensureLogos();
 
@@ -596,6 +607,7 @@ void CarouselComponent::getCarouselFromTheme(const ThemeData::ThemeElement* elem
 	if (elem->has("gradientType"))
 		mColorGradientHorizontal = elem->get<std::string>("gradientType").compare("horizontal");
 
+	mSelectSound = elem->has("selectSound") ? elem->get<std::string>("selectSound") : "";
 	if (elem->has("scrollSound"))
 		mScrollSound = elem->get<std::string>("scrollSound");
 
@@ -942,6 +954,7 @@ void CarouselComponent::onMouseMove(int x, int y)
 
 		if (mCursor != offset)
 		{
+			onScroll(1);
 			float camOffset = mCamOffset;
 
 			if (mLastCursor == offset)

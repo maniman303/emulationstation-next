@@ -37,6 +37,7 @@ public:
 	virtual void update(int deltaTime) override;
 
 protected:
+	void onListActivated() override { mList.stopScrolling(); mList.onActivated(); }
 	virtual std::string getQuickSystemSelectRightButton() override;
 	virtual std::string getQuickSystemSelectLeftButton() override;
 	virtual void populateList(const std::vector<FileData*>& files) override;

@@ -60,6 +60,7 @@ public:
 
 protected:
 	void onCursorChanged(const CursorState& state) override;
+	void onScroll(int amt) override;
 
 private:
 	bool mFocused;

@@ -303,6 +303,7 @@ std::map<std::string, std::map<std::string, ThemeData::ElementPropertyType>> The
 		{ "fontPath", PATH },
 		{ "fontSize", FLOAT },
 		{ "scrollSound", PATH },
+		{ "cancelSound", PATH },
 		{ "alignment", STRING },					// left, center, right
 		{ "horizontalMargin", FLOAT },
 		{ "forceUppercase", BOOLEAN },
@@ -575,6 +576,7 @@ std::map<std::string, std::map<std::string, ThemeData::ElementPropertyType>> The
 		{ "transitionSpeed", FLOAT },
 		{ "scaledLogoSpacing", FLOAT },
 		{ "scrollSound", PATH },
+		{ "selectSound", PATH },
 		{ "zIndex", FLOAT },
 		{ "systemInfoDelay", FLOAT },
 		{ "systemInfoCountOnly", BOOLEAN } } },
@@ -599,12 +601,14 @@ std::map<std::string, std::map<std::string, ThemeData::ElementPropertyType>> The
 		{ "transitionSpeed", FLOAT },
 		{ "scaledLogoSpacing", FLOAT },
 		{ "scrollSound", PATH },
+		{ "selectSound", PATH },
 		{ "zIndex", FLOAT },
 		{ "imageSource", STRING } } },			// image, thumbnail, marquee
 
 	{ "menuText", {
 		{ "fontPath", PATH },
 		{ "fontSize", FLOAT },
+		{ "backgroundColor", COLOR },
 		{ "separatorColor", COLOR },
 		{ "selectorColor", COLOR },
 		{ "selectorColorEnd", COLOR },
@@ -616,9 +620,12 @@ std::map<std::string, std::map<std::string, ThemeData::ElementPropertyType>> The
 		{ "fontSize", FLOAT },
 		{ "color", COLOR } } },
 	{ "menuGroup", {
+		{ "selectSound", PATH },
+		{ "cancelSound", PATH },
 		{ "fontPath", PATH },
 		{ "fontSize", FLOAT },		
 		{ "lineSpacing", FLOAT },		
+		{ "scrollSound", PATH },
 		{ "alignment", STRING },					// left, center, right
 		{ "backgroundColor", COLOR },
 		{ "separatorColor", COLOR },
@@ -1692,6 +1699,9 @@ void ThemeData::parseView(const pugi::xml_node& root, ThemeView& view, bool over
 			std::string elemKey = nameAttr.substr(prevOff, off - prevOff);
 			prevOff = nameAttr.find_first_not_of(delim, off);
 			off = nameAttr.find_first_of(delim, prevOff);
+			// Menu groups and menu text styles may share names, such as keyboard.
+			if (strcmp(node.name(), "menuGroup") == 0)
+				elemKey = "menuGroup:" + elemKey;
 
 			parseElement(node, elemTypeIt->second,
 				view.elements.insert(std::pair<std::string, ThemeElement>(elemKey, ThemeElement())).first->second, view, overwriteElements);
@@ -1973,6 +1983,12 @@ void ThemeData::parseElement(const pugi::xml_node& root, const std::map<std::str
 		std::string imports = Utils::String::toLower(root.attribute("importProperties").as_string());
 
 		auto importIt = view.elements.find(imports);
+		if (element.type == "menuGroup")
+		{
+			auto groupImport = view.elements.find("menuGroup:" + imports);
+			if (groupImport != view.elements.cend())
+				importIt = groupImport;
+		}
 		if (importIt != view.elements.cend())
 		{
 			for (auto prop : importIt->second.properties)
@@ -2215,7 +2231,9 @@ const ThemeData::ThemeElement* ThemeData::getElement(const std::string& view, co
 	if(viewIt == mViews.cend())
 		return NULL; // not found
 
-	auto elemIt = viewIt->second.elements.find(element);
+	auto elemIt = viewIt->second.elements.find(expectedType == "menuGroup" ? "menuGroup:" + element : element);
+	if (elemIt == viewIt->second.elements.cend() && expectedType.empty())
+		elemIt = viewIt->second.elements.find("menuGroup:" + element);
 	if(elemIt == viewIt->second.elements.cend()) return NULL;
 
 	if(elemIt->second.type != expectedType && !expectedType.empty())
@@ -2237,7 +2255,7 @@ const std::vector<std::string> ThemeData::getElementNames(const std::string& vie
 	{
 		for (auto& element : viewIt->second.elements)
 			if (element.second.type == expectedType)
-				ret.push_back(element.first);
+				ret.push_back(expectedType == "menuGroup" ? element.first.substr(std::string("menuGroup:").size()) : element.first);
 	}
 
 	return ret;
@@ -2564,35 +2582,64 @@ ThemeData::ThemeMenu::ThemeMenu(ThemeData* theme)
 	}
 
 
-	elem = theme->getElement("menu", "menugroup", "menuGroup");
+	Keyboard = Text;
+	Keyboard.backgroundColor = 0x60606025;
+	elem = theme->getElement("menu", "keyboard", "menuText");
 	if (elem)
 	{
-		Group.visible = true;
-
 		if (elem->has("fontPath") || elem->has("fontSize"))
-			Group.font = Font::getFromTheme(elem, ThemeFlags::ALL, Font::get(FONT_SIZE_SMALL), "true");
+			Keyboard.font = Font::getFromTheme(elem, ThemeFlags::ALL, Text.font, true);
 		if (elem->has("color"))
-			Group.color = elem->get<unsigned int>("color");
+			Keyboard.color = elem->get<unsigned int>("color");
+		if (elem->has("selectedColor"))
+			Keyboard.selectedColor = elem->get<unsigned int>("selectedColor");
+		if (elem->has("selectorColor"))
+			Keyboard.selectorColor = elem->get<unsigned int>("selectorColor");
 		if (elem->has("backgroundColor"))
-			Group.backgroundColor = elem->get<unsigned int>("backgroundColor");
-		if (elem->has("separatorColor"))
-			Group.separatorColor = elem->get<unsigned int>("separatorColor");
-		if (elem->has("lineSpacing"))
-			Group.lineSpacing = elem->get<float>("lineSpacing");
-		if (elem->has("visible"))
-			Group.visible = elem->get<bool>("visible");
-
-		if (elem->has("alignment"))
-		{
-			std::string str = elem->get<std::string>("alignment");
-			if (str == "left")
-				Group.alignment = ALIGN_LEFT;
-			else if (str == "center")
-				Group.alignment = ALIGN_CENTER;
-			else if (str == "right")
-				Group.alignment = ALIGN_RIGHT;
-		}
+			Keyboard.backgroundColor = elem->get<unsigned int>("backgroundColor");
 	}
+
+	auto readMenuGroup = [theme](const char* name, MenuGroupElement& group, const std::shared_ptr<Font>& fallbackFont)
+	{
+		const auto* elem = theme->getElement("menu", name, "menuGroup");
+		if (elem)
+		{
+			group.visible = true;
+
+			if (elem->has("fontPath") || elem->has("fontSize"))
+				group.font = Font::getFromTheme(elem, ThemeFlags::ALL, fallbackFont, true);
+			if (elem->has("color"))
+				group.color = elem->get<unsigned int>("color");
+			if (elem->has("backgroundColor"))
+				group.backgroundColor = elem->get<unsigned int>("backgroundColor");
+			if (elem->has("separatorColor"))
+				group.separatorColor = elem->get<unsigned int>("separatorColor");
+			if (elem->has("lineSpacing"))
+				group.lineSpacing = elem->get<float>("lineSpacing");
+			if (elem->has("selectSound"))
+				group.selectSound = elem->get<std::string>("selectSound");
+			if (elem->has("cancelSound"))
+				group.cancelSound = elem->get<std::string>("cancelSound");
+			if (elem->has("scrollSound"))
+				group.scrollSound = elem->get<std::string>("scrollSound");
+			if (elem->has("visible"))
+				group.visible = elem->get<bool>("visible");
+
+			if (elem->has("alignment"))
+			{
+				std::string str = elem->get<std::string>("alignment");
+				if (str == "left")
+					group.alignment = ALIGN_LEFT;
+				else if (str == "center")
+					group.alignment = ALIGN_CENTER;
+				else if (str == "right")
+					group.alignment = ALIGN_RIGHT;
+			}
+		}
+	};
+	readMenuGroup("menugroup", Group, Font::get(FONT_SIZE_SMALL));
+	KeyboardGroup = Group;
+	readMenuGroup("keyboard", KeyboardGroup, Group.font);
 
 	elem = theme->getElement("menu", "menubutton", "menuButton");
 	if (elem)

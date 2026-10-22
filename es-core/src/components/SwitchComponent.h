@@ -17,6 +17,7 @@ public:
 	void onSizeChanged() override;
 	void onOpacityChanged();
 
+	bool changeState(int direction);
 	bool getState() const;
 	void setState(bool state);
 	std::string getValue() const;

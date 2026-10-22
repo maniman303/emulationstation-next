@@ -1016,6 +1016,10 @@ Can be created as an extra.
 
 #### textlist
 
+* `cancelSound` - type: PATH.
+  - Plays when leaving a game list or returning from a folder. Does not play when
+    the list is hidden by a menu or when a game is launched.
+
 * `pos` - type: NORMALIZED_PAIR.
 * `size` - type: NORMALIZED_PAIR.
 * `origin` - type: NORMALIZED_PAIR.
@@ -1217,6 +1221,10 @@ EmulationStation borrows the concept of "nine patches" from Android (or "9-Slice
 
 #### carousel
 
+* `selectSound` - type: PATH.
+  - Plays when activating a system or a game/folder in a carousel. Also supported
+    by `gamecarousel`. Restoring a cursor or showing the carousel is silent.
+
 * `type` - type: STRING.
 	- Sets the scoll direction of the carousel.
 	- Accepted values are "horizontal", "vertical", "horizontal_wheel" or "vertical_wheel".
@@ -1277,6 +1285,62 @@ BATOCERA 5.24
 * `selectorColorEnd` - type: NORMALIZED_PAIR. 
     - Bottom color for the gradient of the "selector bar."
 	
+
+##### On screen keyboard keys
+
+Inside `<view name="menu">`, an optional `<menuText name="keyboard">` styles
+the keyboard keys. Missing font and color properties inherit from
+`<menuText name="menutext">`. If the keyboard element is absent, all keys use
+the regular menu text style.
+
+* `color`: Unselected key label color.
+* `selectedColor`: Selected key label color.
+* `selectorColor`: Selected key background tint.
+* `backgroundColor`: Unselected key background color in RGBA hex. Defaults to
+  `60606025`, including when the keyboard element is absent.
+* `fontPath`, `fontSize`: Key label font and size.
+
+```xml
+<view name="menu">
+    <menuText name="keyboard">
+        <color>FFFFFFFF</color>
+        <selectedColor>000000FF</selectedColor>
+        <selectorColor>FFFFFFFF</selectorColor>
+        <backgroundColor>303030FF</backgroundColor>
+    </menuText>
+</view>
+```
+
+#### menuGroup sounds
+
+Within `<view name="menu">`, menu groups support three optional sound paths:
+
+* `scrollSound`: Navigation sound. The regular `menugroup` supplies settings
+  row and tab navigation, including option popups; the `keyboard` group supplies
+  keyboard navigation. Constructing or restoring a menu cursor is silent.
+* `selectSound`: The regular `menugroup` supplies menu row and option activation
+  and left/right option changes. The `keyboard` group
+  supplies key activation, including letters, Shift, Alt, Delete, OK, and Cancel.
+  Keyboard keys play this sound once before performing their action.
+* `cancelSound`: The `keyboard` group supplies feedback when deleting a
+  character, including the on-screen Delete key, controller deletion shortcut,
+  and physical Backspace/Delete. Deletion at an empty boundary is silent and
+  does not also play `selectSound`.
+
+`<menuGroup name="keyboard">` inherits the regular
+`<menuGroup name="menugroup">` values before applying its own properties. If
+the keyboard group is absent, it uses `menugroup` entirely. A missing sound in
+the resolved group is silent. Assets play without runtime pitch or volume
+adjustments.
+
+```xml
+<view name="menu">
+    <menuGroup name="keyboard">
+        <scrollSound>./_inc/sounds/scroll.wav</scrollSound>
+        <selectSound>./_inc/sounds/click.wav</selectSound>
+    </menuGroup>
+</view>
+```
 
 #### menuSwitch
 

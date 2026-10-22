@@ -71,6 +71,7 @@ public:
 	std::vector<SystemData*> getObjects();
 
 protected:
+	void openSelectedSystem();
 	//virtual void onCursorChanged(const CursorState& state) override;
 	void onCursorChanged(const CursorState& state);
 	SystemData* getSelected();

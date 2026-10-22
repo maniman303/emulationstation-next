@@ -8,6 +8,7 @@
 #include <stack>
 #include <set>
 #include "MultiStateInput.h"
+#include "Sound.h"
 
 class ISimpleGameListView : public IGameListView
 {
@@ -63,6 +64,9 @@ public:
 	virtual bool onAction(const std::string& action) override;
 
 protected:	
+	virtual void onListActivated() {}
+	virtual std::shared_ptr<Sound> getListCancelSound() const { return nullptr; }
+	
 	FolderData* createParentFolderData();
 	FileData*   createNoEntriesPlaceholder();
 	FileData*   mLastParentFolderData;
@@ -98,6 +102,9 @@ protected:
 	MultiStateInput mSelectButton;
 
 	ThemeData::ExtraImportType mExtraMode;	
+
+private:
+	bool returnToParent();
 };
 
 #endif // ES_APP_VIEWS_GAME_LIST_ISIMPLE_GAME_LIST_VIEW_H

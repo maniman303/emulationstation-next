@@ -105,20 +105,14 @@ GuiTextEditPopupKeyboard::GuiTextEditPopupKeyboard(Window* window, const std::st
 	: GuiComponent(window), mBackground(window, ":/frame.png"), mGrid(window, Vector2i(1, 6)), mMultiLine(multiLine)
 {
 	setTag("popup");
-	if (auto* currentTheme = ThemeData::getDefaultTheme())
-	{
-		for (const auto& view : { currentTheme->getDefaultView(), std::string("detailed"), std::string("basic"),
-			std::string("grid"), std::string("carousel"), std::string("video"), std::string("system") })
-		{
-			mNavigationSound = Sound::getScrollSound(currentTheme, view, 1.08f);
-			if (mNavigationSound)
-				break;
-		}
-	}
 
 	mOkCallback = okCallback;
 
 	auto theme = ThemeData::getMenuTheme();
+	if (!theme->KeyboardGroup.scrollSound.empty())
+		mScrollSound = Sound::get(theme->KeyboardGroup.scrollSound);
+	if (!theme->KeyboardGroup.selectSound.empty())
+		mSelectSound = Sound::get(theme->KeyboardGroup.selectSound);
 	mBackground.setImagePath(theme->Background.path);
 	mBackground.setEdgeColor(theme->Background.color);
 	mBackground.setCenterColor(theme->Background.centerColor);
@@ -133,6 +127,8 @@ GuiTextEditPopupKeyboard::GuiTextEditPopupKeyboard(Window* window, const std::st
 	mKeyboardGrid = std::make_shared<ComponentGrid>(mWindow, Vector2i(kbUs[0].size(), kbUs.size() / BUTTON_LAYER_SIZE));
 
 	mText = std::make_shared<TextEditComponent>(mWindow);
+	if (!theme->KeyboardGroup.cancelSound.empty())
+		mText->setDeleteSound(Sound::get(theme->KeyboardGroup.cancelSound));
 	mText->setValue(initValue);
 
 	if (!multiLine)
@@ -231,6 +227,16 @@ GuiTextEditPopupKeyboard::GuiTextEditPopupKeyboard(Window* window, const std::st
 				else
 					button = makeButton(lower, upper, lowerAlted, upperAlted);
 
+				const auto onPressed = button->getPressedFunc();
+				const bool isDeleteKey = lower == _U("\uF177") || lower == "DEL";
+				button->setPressedFunc([sound = isDeleteKey ? std::shared_ptr<Sound>() : mSelectSound, onPressed]
+				{
+					if (sound)
+						sound->play();
+					if (onPressed)
+						onPressed();
+				});
+				button->setMenuStyle(theme->Keyboard);
 				button->setPadding(Vector4f(BUTTON_GRID_HORIZ_PADDING / 4.0f, BUTTON_GRID_HORIZ_PADDING / 4.0f, BUTTON_GRID_HORIZ_PADDING / 4.0f, BUTTON_GRID_HORIZ_PADDING / 4.0f));
 				button->setRenderNonFocusedBackground(false);
 				buttons.push_back(button);
@@ -467,9 +473,9 @@ bool GuiTextEditPopupKeyboard::input(InputConfig* config, Input input)
 	}
 	else
 		stopNavigationRepeat();
-	if (mNavigationSound &&
+	if (mScrollSound &&
 		(previousGridCursor != mGrid.getCursor() || previousKeyCursor != mKeyboardGrid->getCursor()))
-		mNavigationSound->play(0.8f);
+		mScrollSound->play();
 	return handled;
 }
 
@@ -491,8 +497,8 @@ void GuiTextEditPopupKeyboard::update(int deltaTime)
 			mNavigationDirection = Vector2i::Zero();
 			break;
 		}
-		if (mNavigationSound)
-			mNavigationSound->play(0.8f);
+		if (mScrollSound)
+			mScrollSound->play();
 		mNavigationRepeatTimer += KEYBOARD_REPEAT_INTERVAL;
 	}
 }

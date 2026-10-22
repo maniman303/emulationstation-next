@@ -31,7 +31,7 @@ done
 
 SSH_OPTIONS="-o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o PreferredAuthentications=password,keyboard-interactive -o PubkeyAuthentication=no"
 
-# Refuse a symlink destination so an upload cannot overwrite the system theme.
+# Refuse a symlink destination so replacement cannot affect the system theme.
 # shellcheck disable=SC2086
 SSHPASS=$DEVICE_PASSWORD sshpass -e ssh $SSH_OPTIONS "root@$DEVICE_IP" sh -s <<'REMOTE'
 set -eu
@@ -41,12 +41,14 @@ target="$themes/art-book-ds"
 [ ! -L "$target" ] || { echo 'Theme destination is a symlink; refusing upload' >&2; exit 1; }
 if [ -e "$target" ]; then
 	[ -d "$target" ] || { echo 'Theme destination is not a directory' >&2; exit 1; }
+	rm -rf -- "$target"
+	printf 'Removed existing art-book-ds theme\n'
 fi
 mkdir -p "$target"
 REMOTE
 
-# Copy the contents into the named theme directory, including hidden files.
+# Copy the theme directory into its parent, including hidden files.
 # shellcheck disable=SC2086
-SSHPASS=$DEVICE_PASSWORD sshpass -e scp -O -r -C $SSH_OPTIONS "$THEME/." "root@$DEVICE_IP:$REMOTE_THEMES/art-book-ds/"
+SSHPASS=$DEVICE_PASSWORD sshpass -e scp -O -r -C $SSH_OPTIONS "$THEME" "root@$DEVICE_IP:$REMOTE_THEMES/"
 printf 'Uploaded art-book-ds to %s/art-book-ds\n' "$REMOTE_THEMES"
 printf 'Select art-book-ds in EmulationStation theme settings (restart EmulationStation if needed).\n'

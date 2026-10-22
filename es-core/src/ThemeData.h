@@ -129,6 +129,7 @@ struct MenuElement
 	bool selectorGradientType;
 	std::string path;
 	std::shared_ptr<Font> font;
+	unsigned int backgroundColor = 0;
 };
 
 struct MenuBackground
@@ -158,6 +159,9 @@ struct MenuGroupElement
 	std::shared_ptr<Font> font;
 	int alignment;
 	bool visible;
+	std::string scrollSound;
+	std::string selectSound;
+	std::string cancelSound;
 };
 
 struct IconElement 
@@ -192,9 +196,11 @@ public:
 		MenuBackground Background{ 0xFFFFFFFF, 0xFFFFFFFF, ":/frame.png", ":/scroll_gradient.png", Vector2f(16, 16), 0, 0.0025f, 0.01f, "innerright" };
 		MenuElement Title{ 0x555555FF, 0x555555FF, 0x555555FF, 0xFFFFFFFF, 0x555555FF, true, "", nullptr };
 		MenuElement Text{ 0x777777FF, 0xFFFFFFFF, 0x878787FF, 0xC6C7C6FF, 0x878787FF, true, "", nullptr };
+		MenuElement Keyboard;
 		MenuElement TextSmall{ 0x777777FF, 0xFFFFFFFF, 0x878787FF, 0xC6C7C6FF, 0x878787FF, true, "", nullptr };
 		MenuElement Footer{ 0xC6C6C6FF, 0xC6C6C6FF, 0xC6C6C6FF, 0xFFFFFFFF, 0xC6C6C6FF, true, "", nullptr };
 		MenuGroupElement Group{ 0x777777FF, 0x00000010, 0xC6C7C6FF, 2.0, "", nullptr, 0 /*ALIGN_LEFT*/, false };
+		MenuGroupElement KeyboardGroup;
 		IconElement Icons { ":/on.svg", ":/off.svg", ":/auto.svg", ":/option_arrow.svg", ":/arrow.svg", ":/slider_knob.svg", ":/textinput_ninepatch.png", ":/textinput_ninepatch_active.png" };
 		ButtonElement Button { ":/button.png", ":/button_filled.png", Vector2f(16,16) };
 		GridElement Grid { false, 0xC6C7C6FF };
