@@ -126,7 +126,7 @@ GuiTextEditPopupKeyboard::GuiTextEditPopupKeyboard(Window* window, const std::st
 	
 	mKeyboardGrid = std::make_shared<ComponentGrid>(mWindow, Vector2i(kbUs[0].size(), kbUs.size() / BUTTON_LAYER_SIZE));
 
-	mText = std::make_shared<TextEditComponent>(mWindow);
+	mText = std::make_shared<TextEditComponent>(mWindow, 11.0f);
 	if (!theme->KeyboardGroup.cancelSound.empty())
 		mText->setDeleteSound(Sound::get(theme->KeyboardGroup.cancelSound));
 	mText->setValue(initValue);

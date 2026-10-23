@@ -13,7 +13,7 @@ class Sound;
 class TextEditComponent : public GuiComponent
 {
 public:
-	TextEditComponent(Window* window);
+	TextEditComponent(Window* window, float horizontalPadding = 5.0f);
 	
 	void textInput(const char* text) override;
 	bool input(InputConfig* config, Input input) override;
@@ -63,6 +63,7 @@ private:
 
 	Vector2f mScrollOffset;
 
+	float mHorizontalPadding; // Padding on each side of the text area.
 	NinePatchComponent mBox;
 
 	std::shared_ptr<Font> mFont;

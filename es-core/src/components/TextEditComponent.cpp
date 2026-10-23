@@ -6,7 +6,6 @@
 #include "Window.h"
 #include "Sound.h"
 
-#define TEXT_PADDING_HORIZ 10
 #define TEXT_PADDING_VERT 2
 
 #define CURSOR_REPEAT_START_DELAY 500
@@ -14,7 +13,8 @@
 
 #define BLINKTIME	1000
 
-TextEditComponent::TextEditComponent(Window* window) : GuiComponent(window),
+TextEditComponent::TextEditComponent(Window* window, float horizontalPadding) : GuiComponent(window),
+	mHorizontalPadding(horizontalPadding),
 	mBox(window, ":/textinput_ninepatch.png"), mFocused(false), 
 	mScrollOffset(0.0f, 0.0f), mCursor(0), mEditing(false), mFont(Font::get(FONT_SIZE_MEDIUM, FONT_PATH_LIGHT)), 
 	mCursorRepeatDir(0)
@@ -382,12 +382,12 @@ bool TextEditComponent::isMultiline()
 
 Vector2f TextEditComponent::getTextAreaPos() const
 {
-	return Vector2f(TEXT_PADDING_HORIZ / 2.0f, TEXT_PADDING_VERT / 2.0f);
+	return Vector2f(mHorizontalPadding, TEXT_PADDING_VERT / 2.0f);
 }
 
 Vector2f TextEditComponent::getTextAreaSize() const
 {
-	return Vector2f(mSize.x() - TEXT_PADDING_HORIZ, mSize.y() - TEXT_PADDING_VERT);
+	return Vector2f(mSize.x() - 2.0f * mHorizontalPadding, mSize.y() - TEXT_PADDING_VERT);
 }
 
 std::vector<HelpPrompt> TextEditComponent::getHelpPrompts()
