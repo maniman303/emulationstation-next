@@ -372,12 +372,8 @@ void ISimpleGameListView::playSelectSound()
 {
 	auto sound = Sound::getFromTheme(mTheme, getName(), "selectSound");
 	if (!sound || sound->isEmpty())
-	{
-		const auto& path = ThemeData::getMenuTheme()->Group.selectSound;
-		sound = path.empty() ? nullptr : Sound::get(path);
-	}
-
-	if (sound && !sound->isEmpty())
+		GuiComponent::playSelectSound();
+	else
 		sound->play();
 }
 

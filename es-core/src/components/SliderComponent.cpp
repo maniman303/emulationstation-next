@@ -140,7 +140,7 @@ bool SliderComponent::input(InputConfig* config, Input input)
 				mMoveAccumulator = -MOVE_REPEAT_DELAY;
 			}
 
-			playSelect();
+			playSelectSound();
 
 			mMoveRate = -mSingleIncrement;
 			mMoveAccumulator = -MOVE_REPEAT_DELAY;
@@ -171,7 +171,7 @@ bool SliderComponent::input(InputConfig* config, Input input)
 				mMoveAccumulator = -MOVE_REPEAT_DELAY;
 			}
 
-			playSelect();
+			playSelectSound();
 
 			mMoveRate = mSingleIncrement;
 			mMoveAccumulator = -MOVE_REPEAT_DELAY;
@@ -413,13 +413,5 @@ void SliderComponent::onMouseMove(int x, int y)
 		setValue(value);
 	}
 	
-	playSelect();
-}
-
-void SliderComponent::playSelect()
-{
-	const auto& path = ThemeData::getMenuTheme()->Group.selectSound;
-	auto sound = path.empty() ? nullptr : Sound::get(path);
-	if (sound && !sound->isEmpty())
-		sound->play();
+	playSelectSound();
 }

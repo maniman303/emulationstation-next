@@ -41,7 +41,6 @@ public:
 	bool getAuto() const;
 
 private:
-	void playSelect();
 	void onValueChanged();
 	unsigned int getCurColor() const;
 

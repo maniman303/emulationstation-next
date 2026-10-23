@@ -48,7 +48,7 @@ GuiGamelistOptions::GuiGamelistOptions(Window* window, IGameListView* gamelist, 
 
 	addChild(&mMenu);
 
-	mMenu.addButton(_("BACK"), _("go back"), [this] { playCancelSound(); delete this; });
+	// mMenu.addButton(_("BACK"), _("go back"), [this] { playCancelSound(); delete this; });
 
 	// check it's not a placeholder folder - if it is, only show "Filter Options"
 	FileData* file = getGamelist()->getCursor();
@@ -503,6 +503,8 @@ void GuiGamelistOptions::openMetaDataEd()
 
 void GuiGamelistOptions::jumpToLetter()
 {
+	playSelectSound();
+
 	std::string letter = mJumpToLetterList->getSelected();
 	IGameListView* gamelist = getGamelist();
 
@@ -559,6 +561,7 @@ bool GuiGamelistOptions::input(InputConfig* config, Input input)
 {
 	if ((config->isMappedTo(BUTTON_BACK, input) || config->isMappedTo("select", input)) && input.value)
 	{
+		playCancelSound();
 		delete this;
 		return true;
 	}
@@ -576,7 +579,7 @@ HelpStyle GuiGamelistOptions::getHelpStyle()
 std::vector<HelpPrompt> GuiGamelistOptions::getHelpPrompts()
 {
 	auto prompts = mMenu.getHelpPrompts();
-	prompts.push_back(HelpPrompt(BUTTON_BACK, _("CLOSE"), [&] { delete this; }));
+	prompts.push_back(HelpPrompt(BUTTON_BACK, _("CLOSE"), [&] { playCancelSound(); delete this; }));
 	return prompts;
 }
 

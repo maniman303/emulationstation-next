@@ -194,7 +194,10 @@ bool GuiGamelistFilter::input(InputConfig* config, Input input)
 		return true;
 
 	if(config->isMappedTo(BUTTON_BACK, input) && input.value != 0)
+	{
+		playCancelSound();
 		applyFilters();
+	}
 
 	return false;
 }

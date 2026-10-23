@@ -238,6 +238,7 @@ protected:
 	void			loadThemedChildren(const ThemeData::ThemeElement* elem);
 
 	std::shared_ptr<Sound>	playCancelSound();
+	std::shared_ptr<Sound>	playSelectSound();
 
 	virtual void	recalcChildrenLayout();
 	virtual void	recalcLayout();

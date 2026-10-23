@@ -184,12 +184,8 @@ void CarouselComponent::onActivated()
 {
 	auto sound = mSelectSound.empty() ? nullptr : Sound::get(mSelectSound);
 	if (!sound || sound->isEmpty())
-	{
-		const auto& path = ThemeData::getMenuTheme()->Group.selectSound;
-		sound = path.empty() ? nullptr : Sound::get(path);
-	}
-
-	if (sound && !sound->isEmpty())
+		playSelectSound();
+	else
 		sound->play();
 }
 
