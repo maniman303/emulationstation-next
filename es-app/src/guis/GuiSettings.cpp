@@ -73,12 +73,7 @@ GuiSettings::~GuiSettings()
 
 void GuiSettings::close()
 {
-	//TODO: Add here cancel sound play
-	//Problems: systems list, quick access, edit metadata
-	const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
-	auto sound = path.empty() ? nullptr : Sound::get(path);
-	if (sound && !sound->isEmpty())
-		sound->play();
+	playCancelSound();
 
 	save();
 

@@ -399,12 +399,8 @@ void ISimpleGameListView::playCancelSound()
 	auto sound = Sound::getFromTheme(mTheme, getName(), "cancelSound");
 	if (!sound || sound->isEmpty())
 	{
-		const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
-		sound = path.empty() ? nullptr : Sound::get(path);
+		playCancelSound();
 	}
-
-	if (sound && !sound->isEmpty())
-		sound->play();
 }
 
 void ISimpleGameListView::showSelectedGameOptions()

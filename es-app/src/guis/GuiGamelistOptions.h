@@ -35,7 +35,6 @@ private:
 	void createNewCollectionFilter();
 	void createCollection(const std::string& inName);
 	void deleteCollection();
-
 	
 	std::string getCustomCollectionName();
 

@@ -2,6 +2,7 @@
 #include "components/ButtonComponent.h"
 #include "components/MultiLineMenuEntry.h"
 #include "TextToSpeech.h"
+#include "Sound.h"
 
 #define BUTTON_GRID_VERT_PADDING  (Renderer::getScreenHeight()*0.0296296)
 #define BUTTON_GRID_HORIZ_PADDING (Renderer::getScreenWidth()*0.0052083333)
@@ -69,12 +70,13 @@ MenuComponent::MenuComponent(Window* window,
 	//mGrid.setEntry(mTitle, Vector2i(0, 0), false);
 
 	mGrid.setUnhandledInputCallback([this](InputConfig* config, Input input) -> bool {
+		const auto previousGridCursor = mGrid.getCursor();
+		const int previousListCursor = mList->getCursorIndex();
 		if (config->isMappedLike("down", input)) {
 			mGrid.setCursorTo(mList);
 			mList->setCursorIndex(0);
-			return true;
 		}
-		if (config->isMappedLike("up", input)) {
+		else if (config->isMappedLike("up", input)) {
 			mList->setCursorIndex(mList->size() - 1);
 			if (mButtons.size()) {
 				mGrid.moveCursor(Vector2i(0, 1));
@@ -82,9 +84,18 @@ MenuComponent::MenuComponent(Window* window,
 			else {
 				mGrid.setCursorTo(mList);
 			}
-			return true;
 		}
-		return false;
+		else {
+			return false;
+		}
+
+		if (previousGridCursor != mGrid.getCursor() || previousListCursor != mList->getCursorIndex()) {
+			const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
+			auto sound = path.empty() ? nullptr : Sound::get(path);
+			if (sound && !sound->isEmpty())
+				sound->play();
+		}
+		return true;
 	});
 
 	// set up list which will never change (externally, anyway)
@@ -463,7 +474,7 @@ void MenuComponent::addButton(const std::string& name, const std::string& helpTe
 	updateSize();
 }
 
-void MenuComponent::setButtonGrid(std::shared_ptr<GuiComponent> grid)
+void MenuComponent::setButtonGrid(std::shared_ptr<GuiComponent> grid, bool canFocus)
 {
 	if (mButtonGrid)
 		mGrid.removeEntry(mButtonGrid);
@@ -473,7 +484,7 @@ void MenuComponent::setButtonGrid(std::shared_ptr<GuiComponent> grid)
 	if (grid)
 	{
 		mButtonGrid = grid;
-		mGrid.setEntry(mButtonGrid, Vector2i(0, 3), true, false, Vector2i(1, 1), GridFlags::BORDER_TOP);
+		mGrid.setEntry(mButtonGrid, Vector2i(0, 3), canFocus, false, Vector2i(1, 1), GridFlags::BORDER_TOP);
 	}
 }
 
@@ -501,6 +512,11 @@ void MenuComponent::onShow()
   GuiComponent::onShow();
   //TextToSpeech::getInstance()->say(mTitle->getText());
   getList()->saySelectedLine();
+}
+
+void MenuComponent::onClosed()
+{
+	playCancelSound();
 }
 
 std::shared_ptr<ComponentGrid> makeButtonGrid(Window* window, const std::vector< std::shared_ptr<ButtonComponent> >& buttons)

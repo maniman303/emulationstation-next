@@ -42,7 +42,7 @@ public:
 
 	void addButton(const std::string& label, const std::string& helpText, const std::function<void()>& callback);
 
-	void setButtonGrid(std::shared_ptr<GuiComponent> grid);
+	void setButtonGrid(std::shared_ptr<GuiComponent> grid, bool canFocus = true);
 
 	void setTitle(const std::string& title, const std::shared_ptr<Font>& font = nullptr);
 	void setSubTitle(const std::string& text);
@@ -89,6 +89,7 @@ public:
 
 protected:
 	virtual void OnTabChanged(int newIndex) { if (mOnTabIndexChanged != nullptr) mOnTabIndexChanged();  };
+	virtual void onClosed();
 
 private:
 	void updateGrid();

@@ -570,6 +570,8 @@ void GuiMetaDataEd::fetchDone(const ScraperSearchResult& result)
 
 void GuiMetaDataEd::close(bool closeAllWindows)
 {
+	playCancelSound();
+
 	// find out if the user made any changes
 	bool dirty = false;
 	for(unsigned int i = 0; i < mEditors.size(); i++)
@@ -638,13 +640,12 @@ void GuiMetaDataEd::close(bool closeAllWindows)
 
 bool GuiMetaDataEd::input(InputConfig* config, Input input)
 {
-	if(GuiComponent::input(config, input))
+	if (GuiComponent::input(config, input))
 		return true;
 
-	const bool isStart = config->isMappedTo("start", input);
-	if(input.value != 0 && (config->isMappedTo(BUTTON_BACK, input) || isStart))
+	if (input.value != 0 && config->isMappedTo(BUTTON_BACK, input))
 	{
-		close(isStart);
+		close(true);
 		return true;
 	}
 
@@ -654,8 +655,7 @@ bool GuiMetaDataEd::input(InputConfig* config, Input input)
 std::vector<HelpPrompt> GuiMetaDataEd::getHelpPrompts()
 {
 	std::vector<HelpPrompt> prompts = mGrid.getHelpPrompts();
-	prompts.push_back(HelpPrompt(BUTTON_BACK, _("BACK")));
-	prompts.push_back(HelpPrompt("start", _("CLOSE"))); 
+	prompts.push_back(HelpPrompt(BUTTON_BACK, _("CLOSE")));
 	return prompts;
 }
 

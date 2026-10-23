@@ -410,7 +410,7 @@ void GuiMenu::addVersionInfo()
 			mVersion->setHorizontalAlignment(ALIGN_CENTER);
 			mVersion->setVerticalAlignment(ALIGN_CENTER);
 			mVersion->setText(label);
-			mMenu.setButtonGrid(mVersion);
+			mMenu.setButtonGrid(mVersion, false);
 		}
 	}
 }
@@ -468,7 +468,6 @@ bool GuiMenu::input(InputConfig* config, Input input)
 
 	if((config->isMappedTo(BUTTON_BACK, input) || config->isMappedTo("start", input)) && input.value != 0)
 	{
-		//TODO: Run close method
 		close();
 		return true;
 	}
@@ -478,10 +477,7 @@ bool GuiMenu::input(InputConfig* config, Input input)
 
 void GuiMenu::close()
 {
-	const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
-	auto sound = path.empty() ? nullptr : Sound::get(path);
-	if (sound && !sound->isEmpty())
-		sound->play();
+	playCancelSound();
 	
 	delete this;
 }

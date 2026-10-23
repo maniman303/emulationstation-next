@@ -1046,6 +1046,20 @@ bool GuiComponent::isChild(GuiComponent* cmp)
 	return false;
 }
 
+std::shared_ptr<Sound> GuiComponent::playCancelSound()
+{
+	const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
+	auto sound = path.empty() ? nullptr : Sound::get(path);
+
+	if (sound && !sound->isEmpty())
+	{
+		sound->play();
+		return sound;
+	}
+
+	return nullptr;
+}
+
 ThemeData::ThemeElement::Property GuiComponent::getProperty(const std::string name)
 {
 	if (getParent() != nullptr && getParent()->isKindOf<ScrollableContainer>())
