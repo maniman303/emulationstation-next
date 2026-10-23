@@ -618,6 +618,7 @@ std::shared_ptr<ButtonComponent> GuiTextEditPopupKeyboard::makeButton(const std:
 		}
 		else if (key == _("CANCEL"))
 		{
+			playCancelSound();
 			delete this;
 			return;
 		}
