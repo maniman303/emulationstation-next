@@ -43,6 +43,7 @@
 #define WEXITSTATUS(x) x
 #include "Win32ApiSystem.h"
 #else
+#include "RocknixUpdate.h"
 #include <sys/statvfs.h>
 #include <ifaddrs.h>
 #include <netinet/in.h>
@@ -209,6 +210,10 @@ std::pair<std::string, int> ApiSystem::updateSystem(const std::function<void(con
 {
 	LOG(LogDebug) << "ApiSystem::updateSystem";
 
+#ifndef WIN32
+	return RocknixUpdate::run("rocknix-update", "/storage/.update",
+		Utils::FileSystem::combine(Paths::getLogPath(), "system-upgrade.log"), func);
+#else
 	std::string updatecommand = "rocknix-update";
 
 	FILE *pipe = popen(updatecommand.c_str(), "r");
@@ -236,6 +241,7 @@ std::pair<std::string, int> ApiSystem::updateSystem(const std::function<void(con
 	}
 
 	return std::pair<std::string, int>(std::string(line), exitCode);
+#endif
 }
 
 std::pair<std::string, int> ApiSystem::backupSystem(BusyComponent* ui, std::string device) 

@@ -214,6 +214,7 @@ void ThreadedUpdater::threadUpdate(const std::string source) {
 	
 				std::string text(info.substr(0, pos));
 				text = Utils::String::trim(text);
+				text += " " + std::to_string(value) + "%";
 	
 				mWndNotification->updatePercent(value);
 				mWndNotification->updateText(text);

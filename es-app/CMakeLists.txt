@@ -253,6 +253,10 @@ set(ES_SOURCES
 
 #-------------------------------------------------------------------------------
 # define OS specific sources and headers
+if(NOT WIN32)
+    LIST(APPEND ES_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/RocknixUpdate.cpp)
+endif()
+
 if(MSVC)
     LIST(APPEND ES_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/EmulationStation.rc
