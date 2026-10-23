@@ -349,6 +349,15 @@ void GuiMenu::openResetOptions()
 		});
 	}
 
+	#if defined(BATTERYPLUS)
+		s->addEntry(_("RESET BATTERYPLUS CALIBRATION"), true, [window] {
+		window->pushGui(new GuiMsgBox(window, _("ARE YOU SURE?"), _("YES"),
+			[] {
+			Utils::Platform::runSystemCommand("/usr/bin/run \"/usr/bin/factoryreset batteryplus\"", "", nullptr);
+			}, _("NO"), nullptr));
+		});
+	#endif
+
 	s->addEntry(_("FACTORY RESET"), true, [window] {
 	window->pushGui(new GuiMsgBox(window, _("WARNING: YOUR DATA AND ALL OTHER CONFIGURATIONS WILL BE RESET TO DEFAULTS!\n\nIF YOU WANT TO KEEP YOUR SETTINGS MAKE A BACKUP AND SAVE IT ON AN EXTERNAL DRIVE BEFORE RUNING THIS OPTION!\n\nEJECT YOUR GAME CARD BEFORE PROCEEDING!\n\nRESET SYSTEM AND RESTART?"), _("YES"),
 		[] {
@@ -2387,7 +2396,7 @@ void GuiMenu::openSystemSettings()
 		dtbOverlayItem(mWindow, s, "custom");
 	}
 
-#if defined(AMD64) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(SM6115) || defined(SM8250) || defined(H700)
+#if defined(AMD64) || defined(H700) || defined(RK3326) || defined(RK3566) || defined(RK3588) || defined(RK3399) || defined(S922X) || defined(SM6115) || defined(SM8250)
 	// Allow user control over how the device sleeps - only show for devices with real suspend enabled
 	s->addGroup(_("SUSPEND"));
 	auto optionsSleep = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DEVICE SUSPEND MODE"), false);
