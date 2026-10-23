@@ -646,7 +646,7 @@ int FileFilterIndex::showFile(FileData* game)
 {
 	// CollectionFilter checks its system selection before delegating here.
 	// Only text and metadata filters need the matching logic below.
-	if (!FileFilterIndex::isFiltered())
+	if (!isFiltered())
 		return 1;
 
 	// if folder, needs further inspection - i.e. see if folder contains at least one element
@@ -663,7 +663,9 @@ int FileFilterIndex::showFile(FileData* game)
 		return 0;
 	}
 
-	bool keepGoing = false;
+	// Global filters have already accepted this game before delegating here.
+	const bool globalFilterActive = hasGlobalFilter();
+	bool keepGoing = globalFilterActive;
 	
 	int textScore = 0;
 
@@ -830,7 +832,7 @@ int FileFilterIndex::showFile(FileData* game)
 		}
 	}
 
-	bool hasFilter = false;
+	bool hasFilter = globalFilterActive;
 
 	for (auto& it : mFilterDecl)
 	{
