@@ -82,11 +82,6 @@ public:
 
 	std::string getThemeTypeName() override { return "textlist"; }
 
-	std::shared_ptr<Sound> getCancelSound() const
-	{
-		return mCancelSound.empty() ? nullptr : Sound::get(mCancelSound);
-	}
-
 	inline void setAlignment(Alignment align) { mAlignment = align; }
 
 	inline void setCursorChangedCallback(const std::function<void(CursorState state)>& func) { mCursorChangedCallback = func; }
@@ -129,7 +124,18 @@ public:
 	Delegate<ILongMouseClickEvent> longMouseClick;
 
 protected:
-	virtual void onScroll(int /*amt*/) { if (!mScrollSound.empty()) Sound::get(mScrollSound)->play(); }
+	virtual void onScroll(int /*amt*/)
+	{
+		auto sound = mScrollSound.empty() ? nullptr : Sound::get(mScrollSound);
+		if (!sound || sound->isEmpty())
+		{
+			const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
+			sound = path.empty() ? nullptr : Sound::get(path);
+		}
+		 
+		if (sound)
+			sound->play();
+	}
 	virtual void onCursorChanged(const CursorState& state);
 
 private:
@@ -169,7 +175,6 @@ private:
 	bool mHasBonusSelectedColor = false;
 
 	std::string mScrollSound;
-	std::string mCancelSound;
 	static const unsigned int COLOR_ID_COUNT = 2;
 	unsigned int mColors[COLOR_ID_COUNT];
 
@@ -731,8 +736,6 @@ void TextListComponent<T>::applyTheme(const std::shared_ptr<ThemeData>& theme, c
 	const float selectorHeight = Math::max(mFont->getHeight(1.0), (float)mFont->getSize()) * mLineSpacing;
 	setSelectorHeight(selectorHeight);
 
-	if (properties & SOUND)
-		mCancelSound = elem->has("cancelSound") ? elem->get<std::string>("cancelSound") : "";
 	if (properties & SOUND && elem->has("scrollSound"))
 		mScrollSound = elem->get<std::string>("scrollSound");
 

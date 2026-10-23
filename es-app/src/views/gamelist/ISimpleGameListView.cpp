@@ -227,9 +227,8 @@ void ISimpleGameListView::update(const int deltaTime)
 
 void ISimpleGameListView::goBack()
 {
-	auto sound = getListCancelSound();
-	if (returnToParent() && sound != nullptr)
-		sound->play();
+	if (returnToParent())
+		playCancelSound();
 }
 
 bool ISimpleGameListView::returnToParent()
@@ -324,8 +323,7 @@ bool ISimpleGameListView::input(InputConfig* config, Input input)
 	{
 		if (!mPopupSelfReference)
 		{
-			if (auto sound = Sound::getScrollSound(getTheme().get(), getName()))
-				sound->play();
+			playScrollSound();
 			onFocusLost();
 			ViewController::get()->goToNextGameList();
 		}
@@ -336,8 +334,7 @@ bool ISimpleGameListView::input(InputConfig* config, Input input)
 	{
 		if (!mPopupSelfReference)
 		{
-			if (auto sound = Sound::getScrollSound(getTheme().get(), getName()))
-				sound->play();
+			playScrollSound();
 			onFocusLost();
 			ViewController::get()->goToPrevGameList();
 		}
@@ -367,10 +364,48 @@ void ISimpleGameListView::showGamelistOptions()
 	if (idx != nullptr && idx->hasRelevency())
 		return;
 
-	Sound::getFromTheme(mTheme, getName(), "menuOpen")->play();
+	playSelectSound();
 	mWindow->pushGui(new GuiGamelistOptions(mWindow, this, this->mRoot->getSystem()));	
 }
 
+void ISimpleGameListView::playSelectSound()
+{
+	auto sound = Sound::getFromTheme(mTheme, getName(), "selectSound");
+	if (!sound || sound->isEmpty())
+	{
+		const auto& path = ThemeData::getMenuTheme()->Group.selectSound;
+		sound = path.empty() ? nullptr : Sound::get(path);
+	}
+
+	if (sound)
+		sound->play();
+}
+
+void ISimpleGameListView::playScrollSound()
+{
+	auto sound = Sound::getScrollSound(getTheme().get(), getName());
+	if (!sound || sound->isEmpty())
+	{
+		const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
+		sound = path.empty() ? nullptr : Sound::get(path);
+	}
+
+	if (sound)
+		sound->play();
+}
+
+void ISimpleGameListView::playCancelSound()
+{
+	auto sound = Sound::getFromTheme(mTheme, getName(), "cancelSound");
+	if (!sound || sound->isEmpty())
+	{
+		const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
+		sound = path.empty() ? nullptr : Sound::get(path);
+	}
+
+	if (sound)
+		sound->play();
+}
 
 void ISimpleGameListView::showSelectedGameOptions()
 {
@@ -378,7 +413,7 @@ void ISimpleGameListView::showSelectedGameOptions()
 	if (cursor == nullptr)
 		return;
 
-	Sound::getFromTheme(mTheme, getName(), "menuOpen")->play();
+	playSelectSound();
 	mWindow->pushGui(new GuiGameOptions(mWindow, cursor));
 }
 
@@ -399,7 +434,7 @@ void ISimpleGameListView::showSelectedGameSaveSnapshots()
 
 	if (SaveStateRepository::isEnabled(cursor))
 	{
-		Sound::getFromTheme(mTheme, getName(), "menuOpen")->play();
+		playSelectSound();
 
 		mWindow->pushGui(new GuiSaveState(mWindow, cursor, [this, cursor](SaveState* state)
 		{
@@ -433,9 +468,7 @@ void ISimpleGameListView::launchSelectedGame()
 
 		populateList(folder->getChildrenListToDisplay());
 		setCursor(top);
-		auto sound = getListCancelSound();
-		if (sound != nullptr)
-			sound->play();
+		playCancelSound();
 	}
 	else
 	{

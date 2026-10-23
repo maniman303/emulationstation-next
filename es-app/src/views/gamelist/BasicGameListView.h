@@ -37,7 +37,6 @@ public:
 	virtual void onLongMouseClick(GuiComponent* component) override;
 
 protected:
-	std::shared_ptr<Sound> getListCancelSound() const override { return mList.getCancelSound(); }
 	virtual std::string getQuickSystemSelectRightButton() override;
 	virtual std::string getQuickSystemSelectLeftButton() override;
 	virtual void populateList(const std::vector<FileData*>& files) override;

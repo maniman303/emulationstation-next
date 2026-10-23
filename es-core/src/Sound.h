@@ -11,6 +11,7 @@ class ThemeData;
 
 class Sound
 {
+	bool empty = true;
 	std::string mPath;
 	Mix_Chunk* mSampleData;
 	int mPlayingChannel;
@@ -30,6 +31,7 @@ public:
 
 	void play(float volume = 1.0f);
 	bool isPlaying() const;
+	bool isEmpty() const { return empty; }
 	void stop();
 
 private:

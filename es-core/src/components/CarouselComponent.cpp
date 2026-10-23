@@ -183,6 +183,12 @@ void CarouselComponent::update(int deltaTime)
 void CarouselComponent::onActivated()
 {
 	auto sound = mSelectSound.empty() ? nullptr : Sound::get(mSelectSound);
+	if (!sound || sound->isEmpty())
+	{
+		const auto& path = ThemeData::getMenuTheme()->Group.selectSound;
+		sound = path.empty() ? nullptr : Sound::get(path);
+	}
+
 	if (sound)
 		sound->play();
 }
@@ -190,6 +196,12 @@ void CarouselComponent::onActivated()
 void CarouselComponent::onScroll(int /*amt*/)
 {
 	auto sound = mScrollSound.empty() ? nullptr : Sound::get(mScrollSound);
+	if (!sound || sound->isEmpty())
+	{
+		const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
+		sound = path.empty() ? nullptr : Sound::get(path);
+	}
+
 	if (sound)
 		sound->play();
 }

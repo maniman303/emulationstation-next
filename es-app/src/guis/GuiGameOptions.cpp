@@ -658,6 +658,12 @@ void GuiGameOptions::deleteCollection()
 
 void GuiGameOptions::close()
 {
+	const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
+	auto sound = path.empty() ? nullptr : Sound::get(path);
+
+	if (sound)
+		sound->play();
+
 	delete this;
 }
 

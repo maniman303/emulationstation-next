@@ -90,6 +90,7 @@ void Sound::init()
 
 	//load wav file via SDL
 	mSampleData = Mix_LoadWAV(mPath.c_str());
+	empty = mSampleData == nullptr;
 	if (mSampleData == nullptr)
 	{
 		LOG(LogError) << "Error loading sound \"" << mPath << "\"!\n" << "	" << SDL_GetError();
@@ -136,6 +137,7 @@ void Sound::init()
 
 void Sound::deinit()
 {
+	empty = true;
 	if (mSampleData == nullptr)
 		return;
 

@@ -64,8 +64,10 @@ public:
 	virtual bool onAction(const std::string& action) override;
 
 protected:	
+	void playSelectSound();
+	void playScrollSound();
+	void playCancelSound();
 	virtual void onListActivated() {}
-	virtual std::shared_ptr<Sound> getListCancelSound() const { return nullptr; }
 	
 	FolderData* createParentFolderData();
 	FileData*   createNoEntriesPlaceholder();

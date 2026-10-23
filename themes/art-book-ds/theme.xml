@@ -531,7 +531,6 @@ https://github.com/anthonycaccese/art-book-next-es
          <zIndex>5</zIndex>
       </text>
       <textlist name="gamelist">
-         <cancelSound>./_inc/sounds/scroll.wav</cancelSound>
          <origin>0 0</origin>
          <y>0.25520833</y><!-- 122.5 -->
          <h ifHelpPrompts="true">0.57083333</h><!-- 274 -->
@@ -577,7 +576,7 @@ https://github.com/anthonycaccese/art-book-next-es
          <size>1 1</size>
       </image>
       <textlist name="gamelist">
-         <cancelSound>./_inc/sounds/scroll.wav</cancelSound>
+         <cancelSound>./_inc/sounds/cancel.wav</cancelSound>
          <alignment>center</alignment>
       </textlist>
    </view>
@@ -772,7 +771,7 @@ https://github.com/anthonycaccese/art-book-next-es
       <menuGroup name="keyboard">
          <scrollSound>./_inc/sounds/click.wav</scrollSound>
          <selectSound>./_inc/sounds/click.wav</selectSound>
-         <cancelSound>./_inc/sounds/scroll.wav</cancelSound>
+         <cancelSound>./_inc/sounds/cancel.wav</cancelSound>
       </menuGroup>
       <menuGroup name="menugroup">
          <fontPath>${fontRegular}</fontPath>
@@ -784,7 +783,7 @@ https://github.com/anthonycaccese/art-book-next-es
          <lineSpacing>2</lineSpacing>
          <selectSound>./_inc/sounds/click.wav</selectSound>
          <scrollSound>./_inc/sounds/scroll.wav</scrollSound>
-         <cancelSound>./_inc/sounds/scroll.wav</cancelSound>
+         <cancelSound>./_inc/sounds/cancel.wav</cancelSound>
       </menuGroup>
       <menuTextEdit name="menutextedit">
          <inactive>./_inc/images/menu-textinput.png</inactive>
