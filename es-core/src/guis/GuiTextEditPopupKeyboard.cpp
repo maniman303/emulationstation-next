@@ -407,7 +407,11 @@ bool GuiTextEditPopupKeyboard::input(InputConfig* config, Input input)
 		if (config->isMappedTo("x", input))
 		{
 			if (input.value)
+			{
+				playCancelSound();
 				delete this;
+			}
+				
 			return true;
 		}
 
@@ -618,7 +622,6 @@ std::shared_ptr<ButtonComponent> GuiTextEditPopupKeyboard::makeButton(const std:
 		}
 		else if (key == _("CANCEL"))
 		{
-			playCancelSound();
 			delete this;
 			return;
 		}
