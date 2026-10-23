@@ -155,7 +155,10 @@ private:
 				mMenu.addRow(row, (!mParent->mMultiSelect && it->selected), false);
 			}
 
-			mMenu.addButton(_("BACK"), _("accept"), [this] { delete this; });
+			mMenu.addButton(_("BACK"), _("accept"), [this] {
+				playCancelSound();
+				delete this;
+			});
 
 			if (mParent->mMultiSelect)
 			{
@@ -192,6 +195,7 @@ private:
 		{
 			if(config->isMappedTo(BUTTON_BACK, input) && input.value != 0) 
 			{
+				playCancelSound();
 				delete this;
 				return true;
 			}
