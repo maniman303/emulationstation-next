@@ -189,21 +189,13 @@ void CarouselComponent::onActivated()
 		sound = path.empty() ? nullptr : Sound::get(path);
 	}
 
-	if (sound)
+	if (sound && !sound->isEmpty())
 		sound->play();
 }
 
 void CarouselComponent::onScroll(int /*amt*/)
 {
-	auto sound = mScrollSound.empty() ? nullptr : Sound::get(mScrollSound);
-	if (!sound || sound->isEmpty())
-	{
-		const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
-		sound = path.empty() ? nullptr : Sound::get(path);
-	}
-
-	if (sound)
-		sound->play();
+	playScrollSound(mScrollSound);
 }
 
 void CarouselComponent::onCursorChanged(const CursorState& state)

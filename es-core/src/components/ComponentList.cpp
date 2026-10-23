@@ -144,7 +144,7 @@ void ComponentListRow::onActivated()
 {
 	const auto& path = ThemeData::getMenuTheme()->Group.selectSound;
 	auto sound = path.empty() ? nullptr : Sound::get(path);
-	if (sound)
+	if (sound && !sound->isEmpty())
 		sound->play();
 }
 
@@ -211,10 +211,7 @@ void ComponentList::update(int deltaTime)
 
 void ComponentList::onScroll(int /*amt*/)
 {
-	const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
-	auto sound = path.empty() ? nullptr : Sound::get(path);
-	if (sound)
-		sound->play();
+	playScrollSound("");
 }
 
 void ComponentList::onCursorChanged(const CursorState& state)

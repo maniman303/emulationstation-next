@@ -480,7 +480,7 @@ void GuiMenu::close()
 {
 	const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
 	auto sound = path.empty() ? nullptr : Sound::get(path);
-	if (sound)
+	if (sound && !sound->isEmpty())
 		sound->play();
 	
 	delete this;

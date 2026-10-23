@@ -103,10 +103,7 @@ void ComponentTab::update(int deltaTime)
 
 void ComponentTab::onScroll(int /*amt*/)
 {
-	const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
-	auto sound = path.empty() ? nullptr : Sound::get(path);
-	if (sound)
-		sound->play();
+	playScrollSound("");
 }
 
 void ComponentTab::onCursorChanged(const CursorState& state)

@@ -231,7 +231,7 @@ GuiTextEditPopupKeyboard::GuiTextEditPopupKeyboard(Window* window, const std::st
 				const bool isDeleteKey = lower == _U("\uF177") || lower == "DEL";
 				button->setPressedFunc([sound = isDeleteKey ? std::shared_ptr<Sound>() : mSelectSound, onPressed]
 				{
-					if (sound)
+					if (sound && !sound->isEmpty())
 						sound->play();
 					if (onPressed)
 						onPressed();

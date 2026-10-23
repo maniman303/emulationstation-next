@@ -36,6 +36,8 @@ private:
 	std::string getCustomCollectionName();
 	void deleteCollection();
 
+	void playCloseSound();
+
 	MenuComponent mMenu;
 
 	FileData* mGame;

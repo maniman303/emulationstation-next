@@ -124,19 +124,12 @@ public:
 	Delegate<ILongMouseClickEvent> longMouseClick;
 
 protected:
-	virtual void onScroll(int /*amt*/)
-	{
-		auto sound = mScrollSound.empty() ? nullptr : Sound::get(mScrollSound);
-		if (!sound || sound->isEmpty())
-		{
-			const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
-			sound = path.empty() ? nullptr : Sound::get(path);
-		}
-		 
-		if (sound)
-			sound->play();
-	}
 	virtual void onCursorChanged(const CursorState& state);
+	
+	void onScroll(int /*amt*/) override
+	{
+		this->playScrollSound(mScrollSound);
+	}
 
 private:
 	void  updateCameraOffset();

@@ -138,17 +138,9 @@ public:
 
 protected:
 	virtual void onCursorChanged(const CursorState& state) override;
-	virtual void onScroll(int /*amt*/)
+	void onScroll(int /*amt*/) override
 	{
-		auto sound = mScrollSound.empty() ? nullptr : Sound::get(mScrollSound);
-		if (!sound || sound->isEmpty())
-		{
-			const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
-			sound = path.empty() ? nullptr : Sound::get(path);
-		}
-
-		if (sound)
-			sound->play();
+		this->playScrollSound(mScrollSound);
 	}
 
 private:

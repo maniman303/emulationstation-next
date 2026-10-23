@@ -420,6 +420,6 @@ void SliderComponent::playSelect()
 {
 	const auto& path = ThemeData::getMenuTheme()->Group.selectSound;
 	auto sound = path.empty() ? nullptr : Sound::get(path);
-	if (sound)
+	if (sound && !sound->isEmpty())
 		sound->play();
 }

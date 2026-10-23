@@ -377,7 +377,7 @@ void ISimpleGameListView::playSelectSound()
 		sound = path.empty() ? nullptr : Sound::get(path);
 	}
 
-	if (sound)
+	if (sound && !sound->isEmpty())
 		sound->play();
 }
 
@@ -390,7 +390,7 @@ void ISimpleGameListView::playScrollSound()
 		sound = path.empty() ? nullptr : Sound::get(path);
 	}
 
-	if (sound)
+	if (sound && !sound->isEmpty())
 		sound->play();
 }
 
@@ -403,7 +403,7 @@ void ISimpleGameListView::playCancelSound()
 		sound = path.empty() ? nullptr : Sound::get(path);
 	}
 
-	if (sound)
+	if (sound && !sound->isEmpty())
 		sound->play();
 }
 
@@ -490,7 +490,7 @@ void ISimpleGameListView::launchSelectedGame()
 			else
 			{
 				auto sound = Sound::getFromTheme(getTheme(), getName(), "launch");
-				if (sound != nullptr)
+				if (sound && !sound->isEmpty())
 					sound->play();
 				
 				launch(cursor);

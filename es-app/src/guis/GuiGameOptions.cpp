@@ -579,6 +579,7 @@ bool GuiGameOptions::input(InputConfig* config, Input input)
 {
 	if ((config->isMappedTo(BUTTON_BACK, input) || config->isMappedTo("select", input)) && input.value)
 	{
+		playCloseSound();
 		close();
 		return true;
 	}
@@ -603,7 +604,7 @@ HelpStyle GuiGameOptions::getHelpStyle()
 std::vector<HelpPrompt> GuiGameOptions::getHelpPrompts()
 {
 	auto prompts = mMenu.getHelpPrompts();
-	prompts.push_back(HelpPrompt(BUTTON_BACK, _("CLOSE"), [&] { close(); }));
+	prompts.push_back(HelpPrompt(BUTTON_BACK, _("CLOSE"), [&] { playCloseSound(); close(); }));
 
 	if (mHasAdvancedGameOptions)
 	{
@@ -656,14 +657,17 @@ void GuiGameOptions::deleteCollection()
 	
 }
 
-void GuiGameOptions::close()
+void GuiGameOptions::playCloseSound()
 {
 	const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
 	auto sound = path.empty() ? nullptr : Sound::get(path);
 
-	if (sound)
+	if (sound && !sound->isEmpty())
 		sound->play();
+}
 
+void GuiGameOptions::close()
+{
 	delete this;
 }
 

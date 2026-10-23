@@ -77,7 +77,7 @@ void GuiSettings::close()
 	//Problems: systems list, quick access, edit metadata
 	const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
 	auto sound = path.empty() ? nullptr : Sound::get(path);
-	if (sound)
+	if (sound && !sound->isEmpty())
 		sound->play();
 
 	save();

@@ -10,6 +10,7 @@
 #include "Settings.h"
 #include <vector>
 #include "Log.h"
+#include "Sound.h"
 
 enum CursorState
 {
@@ -434,6 +435,18 @@ protected:
 			onCursorChanged((mScrollTier > 0) ? CURSOR_SCROLLING : CURSOR_STOPPED);
 	}
 
+	void playScrollSound(std::string soundPath)
+	{
+		auto sound = soundPath.empty() ? nullptr : Sound::get(soundPath);
+		if (!sound || sound->isEmpty())
+		{
+			const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
+			sound = path.empty() ? nullptr : Sound::get(path);
+		}
+
+		if (sound && !sound->isEmpty())
+			sound->play();
+	}
 
 	virtual void onCursorChanged(const CursorState& /*state*/) {}
 	virtual void onScroll(int /*amt*/) {}
