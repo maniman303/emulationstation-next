@@ -1,6 +1,8 @@
 #include "components/MenuComponent.h"
 #include "components/ButtonComponent.h"
 #include "components/MultiLineMenuEntry.h"
+#include "LocaleES.h"
+#include "Settings.h"
 #include "TextToSpeech.h"
 #include "Sound.h"
 
@@ -389,8 +391,19 @@ float MenuComponent::getHeaderGridHeight() const
 
 float MenuComponent::getButtonGridHeight() const
 {
-	auto menuTheme = ThemeData::getMenuTheme();
-	return (mButtonGrid ? mButtonGrid->getSize().y() : menuTheme->Text.font->getHeight() + BUTTON_GRID_VERT_PADDING);	
+	// auto menuTheme = ThemeData::getMenuTheme();
+	// return (mButtonGrid ? mButtonGrid->getSize().y() : menuTheme->Text.font->getHeight() + BUTTON_GRID_VERT_PADDING);
+
+	if (!mButtonGrid)
+		return BUTTON_GRID_VERT_PADDING;
+
+	if (mButtons.empty())
+	{
+		auto menuTheme = ThemeData::getMenuTheme();
+		return menuTheme->Text.font->getHeight() + BUTTON_GRID_VERT_PADDING;
+	}
+
+	return mButtonGrid->getSize().y();
 }
 
 void MenuComponent::updateSize()
@@ -478,7 +491,15 @@ void MenuComponent::clearButtons()
 
 void MenuComponent::addButton(const std::string& name, const std::string& helpText, const std::function<void()>& callback)
 {
-	mButtons.push_back(std::make_shared<ButtonComponent>(mWindow, Utils::String::toUpper(name), helpText, callback));
+	const std::string upperName = Utils::String::toUpper(name);
+	if (upperName == _("BACK") && Settings::getInstance()->getBool("ShowHelpPrompts"))
+	{
+		// Callers may have added rows with resizing deferred until addButton().
+		updateSize();
+		return;
+	}
+
+	mButtons.push_back(std::make_shared<ButtonComponent>(mWindow, upperName, helpText, callback));
 	updateGrid();
 	updateSize();
 }
@@ -495,6 +516,8 @@ void MenuComponent::setButtonGrid(std::shared_ptr<GuiComponent> grid, bool canFo
 		mButtonGrid = grid;
 		mGrid.setEntry(mButtonGrid, Vector2i(0, 3), canFocus, false, Vector2i(1, 1), GridFlags::BORDER_TOP);
 	}
+
+	updateSize();
 }
 
 void MenuComponent::updateGrid()
