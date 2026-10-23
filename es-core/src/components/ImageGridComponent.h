@@ -136,14 +136,6 @@ public:
 
 	void		preloadTiles();
 
-protected:
-	virtual void onCursorChanged(const CursorState& state) override;
-	
-	void onScroll(int /*amt*/) override
-	{
-		this->playScrollSound();
-	}
-
 	void playScrollSound() override
 	{
 		auto sound = mScrollSound.empty() ? nullptr : Sound::get(mScrollSound);
@@ -155,6 +147,14 @@ protected:
 		{
 			sound->play();
 		}
+	}
+
+protected:
+	virtual void onCursorChanged(const CursorState& state) override;
+	
+	void onScroll(int /*amt*/) override
+	{
+		this->playScrollSound();
 	}
 
 private:

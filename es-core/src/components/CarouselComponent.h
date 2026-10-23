@@ -101,6 +101,8 @@ public:
 	int getLastCursor() { return mLastCursor; }
 	void resetLastCursor() { mLastCursor = -1; }
 
+	void playScrollSound() override;
+
 	virtual bool onMouseClick(int button, bool pressed, int x, int y) override;
 	virtual void onMouseMove(int x, int y) override;
 	virtual bool onMouseWheel(int delta) override;
@@ -113,7 +115,6 @@ public:
 protected:
 	void onCursorChanged(const CursorState& state) override;
 	void onScroll(int amt) override;
-	void playScrollSound() override;
 
 private:
 	void	 clearEntries();

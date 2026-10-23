@@ -77,6 +77,8 @@ protected:
 	SystemData* getSelected();
 
 private:
+	int getVisibleAlternativeSystemCount();
+
 	void	 loadExtras(SystemData* system);
 	void	 ensureTexture(GuiComponent* extra, TextureLoadMode mode = TextureLoadMode::LOADNOMOVETOTOP);
 

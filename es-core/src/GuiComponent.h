@@ -217,6 +217,10 @@ public:
 	virtual bool	onMouseClick(int button, bool pressed, int x, int y);
 	virtual bool	onAction(const std::string& action);
 
+	virtual void	playCancelSound();
+	virtual void	playScrollSound();
+	virtual void	playSelectSound();
+
 	virtual void	updateBindings(IBindable* bindable);
 	std::vector<GuiComponent*> enumerateExtraChildrens();
 
@@ -236,10 +240,6 @@ protected:
 	void			updateChildren(int deltaTime); // updates animations
 
 	void			loadThemedChildren(const ThemeData::ThemeElement* elem);
-
-	virtual void	playCancelSound();
-	virtual void	playScrollSound();
-	virtual void	playSelectSound();
 
 	virtual void	recalcChildrenLayout();
 	virtual void	recalcLayout();

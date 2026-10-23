@@ -900,6 +900,7 @@ bool ViewController::input(InputConfig* config, Input input)
 	if(config->isMappedTo("start", input) && input.value != 0)
 	{
 		// open menu
+		playSelectSound();
 		mWindow->pushGui(new GuiMenu(mWindow));
 		return true;
 	}

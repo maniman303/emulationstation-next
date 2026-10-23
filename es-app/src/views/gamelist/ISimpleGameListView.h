@@ -60,13 +60,14 @@ public:
 	void showSelectedGameSaveSnapshots();
 	void toggleFavoritesFilter();
 
+	void playSelectSound() override;
+	void playScrollSound() override;
+	void playCancelSound() override;
+
 	virtual std::vector<HelpPrompt> getHelpPrompts() override;
 	virtual bool onAction(const std::string& action) override;
 
-protected:	
-	void playSelectSound() override;
-	void playScrollSound();
-	void playCancelSound() override;
+protected:
 	virtual void onListActivated() {}
 	
 	FolderData* createParentFolderData();

@@ -121,16 +121,6 @@ public:
 	virtual bool onMouseWheel(int delta) override;
 	virtual bool hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult = nullptr) override;
 
-	Delegate<ILongMouseClickEvent> longMouseClick;
-
-protected:
-	virtual void onCursorChanged(const CursorState& state);
-	
-	void onScroll(int /*amt*/) override
-	{
-		this->playScrollSound();
-	}
-	
 	void playScrollSound() override
 	{
 		auto sound = mScrollSound.empty() ? nullptr : Sound::get(mScrollSound);
@@ -142,6 +132,16 @@ protected:
 		{
 			sound->play();
 		}
+	}
+
+	Delegate<ILongMouseClickEvent> longMouseClick;
+
+protected:
+	virtual void onCursorChanged(const CursorState& state);
+	
+	void onScroll(int /*amt*/) override
+	{
+		this->playScrollSound();
 	}
 
 private:

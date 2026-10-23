@@ -89,7 +89,8 @@ MenuComponent::MenuComponent(Window* window,
 			return false;
 		}
 
-		if (previousGridCursor != mGrid.getCursor() || previousListCursor != mList->getCursorIndex()) {
+		// Grid focus changes play their sound in input().
+		if (previousGridCursor == mGrid.getCursor() && previousListCursor != mList->getCursorIndex()) {
 			playScrollSound();
 		}
 
@@ -122,10 +123,20 @@ bool MenuComponent::input(InputConfig* config, Input input)
 		// continue processing if the HAT value was reset to 0
 	}
 
-	if (GuiComponent::input(config, input))
-		return true;
+	// Activation can close the menu; only inspect focus after navigation input.
+	const bool buttonNavigation = mButtonGrid && mGrid.getSelectedComponent() == mButtonGrid &&
+		(config->isMappedLike("left", input) || config->isMappedLike("right", input));
+	if (!input.value || (!config->isMappedLike("up", input) && !config->isMappedLike("down", input) && !buttonNavigation))
+		return GuiComponent::input(config, input);
 
-	return false;
+	const auto previousGridCursor = mGrid.getCursor();
+	const auto buttonGrid = std::dynamic_pointer_cast<ComponentGrid>(mButtonGrid);
+	const auto previousButtonCursor = buttonGrid ? buttonGrid->getCursor() : Vector2i::Zero();
+	const bool handled = GuiComponent::input(config, input);
+	if (previousGridCursor != mGrid.getCursor() || (buttonGrid && previousButtonCursor != buttonGrid->getCursor()))
+		playScrollSound();
+
+	return handled;
 }
 
 void MenuComponent::addTab(const std::string label, const std::string value, bool setCursorHere)

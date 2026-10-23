@@ -381,12 +381,8 @@ void ISimpleGameListView::playScrollSound()
 {
 	auto sound = Sound::getScrollSound(getTheme().get(), getName());
 	if (!sound || sound->isEmpty())
-	{
-		const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
-		sound = path.empty() ? nullptr : Sound::get(path);
-	}
-
-	if (sound && !sound->isEmpty())
+		GuiComponent::playScrollSound();
+	else
 		sound->play();
 }
 

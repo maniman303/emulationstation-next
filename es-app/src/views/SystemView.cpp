@@ -500,17 +500,22 @@ bool SystemView::input(InputConfig* config, Input input)
 		if (config->isMappedTo(BUTTON_BACK, input))
 		{
 			if (showNavigationBar())
+			{
+				playSelectSound();
 				return true;
+			}
 		}
 
-		if (config->isMappedTo("x", input))
+		if (config->isMappedTo("x", input) && getVisibleAlternativeSystemCount() > 0)
 		{
+			playSelectSound();
 			mCarousel.setCursor(SystemData::getRandomSystem(getSelected()));
 			return true;
 		}
 
 		if (config->isMappedTo("select", input))
 		{
+			playSelectSound();
 			GuiMenu::openQuitMenu_static(mWindow, true);
 			return true;
 		}
@@ -894,6 +899,14 @@ void SystemView::render(const Transform4x4f& parentTrans)
 	renderExtras(trans, minMax.second, INT16_MAX);
 }
 
+int SystemView::getVisibleAlternativeSystemCount()
+{
+	const auto* selectedSystem = getSelected();
+	return std::count_if(
+		SystemData::sSystemVector.cbegin(), SystemData::sSystemVector.cend(),
+		[selectedSystem](SystemData* system) { return system->isGameSystem() && system->isVisible() && system != selectedSystem; });
+}
+
 std::vector<HelpPrompt> SystemView::getHelpPrompts()
 {
 	std::vector<HelpPrompt> prompts = mCarousel.getHelpPrompts();
@@ -909,11 +922,7 @@ std::vector<HelpPrompt> SystemView::getHelpPrompts()
 	}
 	else
 	{
-		const auto* selectedSystem = getSelected();
-		const auto visibleAlternativeSystemCount = std::count_if(
-			SystemData::sSystemVector.cbegin(), SystemData::sSystemVector.cend(),
-			[selectedSystem](SystemData* system) { return system->isGameSystem() && system->isVisible() && system != selectedSystem; });
-		if (visibleAlternativeSystemCount > 0)
+		if (getVisibleAlternativeSystemCount() > 0)
 			prompts.push_back(HelpPrompt("x", _("RANDOM")));
 		if (SystemData::getSystem("all") != nullptr)
 			prompts.push_back(HelpPrompt("y", _("SEARCH"), [&] { showQuickSearch(); })); // QUICK 
