@@ -16,7 +16,7 @@
 #define BUTTON_LAYER_SIZE (4)
 
 static constexpr int KEYBOARD_REPEAT_DELAY = 400;
-static constexpr int KEYBOARD_REPEAT_INTERVAL = 80;
+static constexpr int KEYBOARD_REPEAT_INTERVAL = 150;
 
 std::vector<std::vector<const char*>> kbUs {
 
