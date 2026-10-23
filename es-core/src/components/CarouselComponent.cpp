@@ -191,7 +191,20 @@ void CarouselComponent::onActivated()
 
 void CarouselComponent::onScroll(int /*amt*/)
 {
-	playScrollSound(mScrollSound);
+	playScrollSound();
+}
+
+void CarouselComponent::playScrollSound()
+{
+	auto sound = mScrollSound.empty() ? nullptr : Sound::get(mScrollSound);
+	if (!sound || sound->isEmpty())
+	{
+		GuiComponent::playScrollSound();
+	}
+	else
+	{
+		sound->play();
+	}
 }
 
 void CarouselComponent::onCursorChanged(const CursorState& state)

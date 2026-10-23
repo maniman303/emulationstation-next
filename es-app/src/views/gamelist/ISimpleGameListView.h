@@ -64,9 +64,9 @@ public:
 	virtual bool onAction(const std::string& action) override;
 
 protected:	
-	void playSelectSound();
+	void playSelectSound() override;
 	void playScrollSound();
-	void playCancelSound();
+	void playCancelSound() override;
 	virtual void onListActivated() {}
 	
 	FolderData* createParentFolderData();

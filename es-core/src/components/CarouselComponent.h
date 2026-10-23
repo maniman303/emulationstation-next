@@ -113,6 +113,7 @@ public:
 protected:
 	void onCursorChanged(const CursorState& state) override;
 	void onScroll(int amt) override;
+	void playScrollSound() override;
 
 private:
 	void	 clearEntries();

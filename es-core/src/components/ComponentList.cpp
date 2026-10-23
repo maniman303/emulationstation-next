@@ -211,7 +211,7 @@ void ComponentList::update(int deltaTime)
 
 void ComponentList::onScroll(int /*amt*/)
 {
-	playScrollSound("");
+	playScrollSound();
 }
 
 void ComponentList::onCursorChanged(const CursorState& state)

@@ -1046,7 +1046,7 @@ bool GuiComponent::isChild(GuiComponent* cmp)
 	return false;
 }
 
-std::shared_ptr<Sound> GuiComponent::playCancelSound()
+void GuiComponent::playCancelSound()
 {
 	const auto& path = ThemeData::getMenuTheme()->Group.cancelSound;
 	auto sound = path.empty() ? nullptr : Sound::get(path);
@@ -1054,13 +1054,21 @@ std::shared_ptr<Sound> GuiComponent::playCancelSound()
 	if (sound && !sound->isEmpty())
 	{
 		sound->play();
-		return sound;
 	}
-
-	return nullptr;
 }
 
-std::shared_ptr<Sound> GuiComponent::playSelectSound()
+void GuiComponent::playScrollSound()
+{
+	const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
+	auto sound = path.empty() ? nullptr : Sound::get(path);
+
+	if (sound && !sound->isEmpty())
+	{
+		sound->play();
+	}
+}
+
+void GuiComponent::playSelectSound()
 {
 	const auto& path = ThemeData::getMenuTheme()->Group.selectSound;
 	auto sound = path.empty() ? nullptr : Sound::get(path);
@@ -1068,10 +1076,7 @@ std::shared_ptr<Sound> GuiComponent::playSelectSound()
 	if (sound && !sound->isEmpty())
 	{
 		sound->play();
-		return sound;
 	}
-
-	return nullptr;
 }
 
 ThemeData::ThemeElement::Property GuiComponent::getProperty(const std::string name)

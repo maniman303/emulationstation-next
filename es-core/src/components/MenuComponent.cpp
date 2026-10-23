@@ -90,11 +90,9 @@ MenuComponent::MenuComponent(Window* window,
 		}
 
 		if (previousGridCursor != mGrid.getCursor() || previousListCursor != mList->getCursorIndex()) {
-			const auto& path = ThemeData::getMenuTheme()->Group.scrollSound;
-			auto sound = path.empty() ? nullptr : Sound::get(path);
-			if (sound && !sound->isEmpty())
-				sound->play();
+			playScrollSound();
 		}
+
 		return true;
 	});
 

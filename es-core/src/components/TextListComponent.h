@@ -128,7 +128,20 @@ protected:
 	
 	void onScroll(int /*amt*/) override
 	{
-		this->playScrollSound(mScrollSound);
+		this->playScrollSound();
+	}
+	
+	void playScrollSound() override
+	{
+		auto sound = mScrollSound.empty() ? nullptr : Sound::get(mScrollSound);
+		if (!sound || sound->isEmpty())
+		{
+			GuiComponent::playScrollSound();
+		}
+		else
+		{
+			sound->play();
+		}
 	}
 
 private:

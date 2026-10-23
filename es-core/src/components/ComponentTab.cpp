@@ -103,7 +103,7 @@ void ComponentTab::update(int deltaTime)
 
 void ComponentTab::onScroll(int /*amt*/)
 {
-	playScrollSound("");
+	playScrollSound();
 }
 
 void ComponentTab::onCursorChanged(const CursorState& state)
