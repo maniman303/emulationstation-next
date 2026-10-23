@@ -492,6 +492,8 @@ void ISimpleGameListView::launchSelectedGame()
 
 void ISimpleGameListView::showQuickSearch()
 {
+	playSelectSound();
+
 	std::string searchText;
 
 	auto idx = mRoot->getSystem()->getIndex(false);
@@ -754,7 +756,7 @@ std::vector<HelpPrompt> ISimpleGameListView::getHelpPrompts()
 	else
 		prompts.push_back(HelpPrompt("x", _("SAVE STATES"), [&] { showSelectedGameSaveSnapshots(); }));
 
-	prompts.push_back(HelpPrompt("y", _("SEARCH") + std::string("/") + _("RANDOM"), [&] { showQuickSearch(); }));
+	prompts.push_back(HelpPrompt("y", _("SEARCH"), [&] { showQuickSearch(); }));
 
 	return prompts;
 }

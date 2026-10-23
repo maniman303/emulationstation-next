@@ -48,7 +48,7 @@ GuiGamelistOptions::GuiGamelistOptions(Window* window, IGameListView* gamelist, 
 
 	addChild(&mMenu);
 
-	// mMenu.addButton(_("BACK"), _("go back"), [this] { playCancelSound(); delete this; });
+	mMenu.addButton(_("BACK"), _("go back"), [this] { playCancelSound(); delete this; });
 
 	// check it's not a placeholder folder - if it is, only show "Filter Options"
 	FileData* file = getGamelist()->getCursor();
