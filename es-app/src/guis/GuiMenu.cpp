@@ -5608,37 +5608,34 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable, bool selectAdhocEnable)
 	auto s = new GuiSettings(mWindow, _("NETWORK SETTINGS").c_str());
 	s->addGroup(_("INFORMATION"));
 
-	auto ips = ApiSystem::getInstance()->getIpAddresses();
-	if (ips.empty()) {
-		s->addWithLabel(_("IP ADDRESS"), std::make_shared<TextComponent>(mWindow, _("NOT CONNECTED"), font, color));
-	}
-	else if (ips.size() == 1) {
-		s->addWithLabel(_("IP ADDRESS"), std::make_shared<TextComponent>(mWindow, ips[0], font, color));
-	}
-	else {
-		ComponentListRow row;
+	// Keep the address list shared with the row handler so returning from Wi-Fi
+	// settings also refreshes the details shown for multiple interfaces.
+	auto ips = std::make_shared<std::vector<std::string>>(ApiSystem::getInstance()->getIpAddresses());
+	auto ipText = [ips]() -> std::string {
+		if (ips->empty())
+			return _("NOT CONNECTED");
+		return ips->front() + (ips->size() > 1 ? " (+)" : "");
+	};
+	auto ipValue = std::make_shared<TextComponent>(mWindow, ipText(), font, color);
+	s->addWithLabel(_("IP ADDRESS"), ipValue, false, [window, ips] {
+		if (ips->size() <= 1)
+			return;
 
-		auto ipLabel = std::make_shared<TextComponent>(mWindow, _("IP ADDRESS"), font, color);
-		row.addElement(ipLabel, true);
-
-		auto ipValue = std::make_shared<TextComponent>(mWindow, ips[0] + " (+)", font, color);
-		row.addElement(ipValue, false);
-
-		row.makeAcceptInputHandler([this, ips] {
-			std::string ipList = _("AVAILABLE IP ADDRESSES:\n\n");
-			for (const auto& ip : ips) {
-				ipList += ip + "\n";
-			}
-			ipList.pop_back();
-
-			mWindow->pushGui(new GuiMsgBox(mWindow, ipList, _("OK"), nullptr));
-		});
-
-		s->addRow(row);
-	}
+		std::string ipList = _("AVAILABLE IP ADDRESSES:\n\n");
+		for (const auto& ip : *ips)
+			ipList += ip + "\n";
+		ipList.pop_back();
+		window->pushGui(new GuiMsgBox(window, ipList, _("OK"), nullptr));
+	});
 
 	auto status = std::make_shared<TextComponent>(mWindow, ApiSystem::getInstance()->ping() ? _("CONNECTED") : _("NOT CONNECTED"), font, color);
 	s->addWithLabel(_("INTERNET STATUS"), status);
+	s->setOnResumeCallback([s, ips, ipValue, ipText, status] {
+		*ips = ApiSystem::getInstance()->getIpAddresses();
+		ipValue->setText(ipText());
+		status->setText(ApiSystem::getInstance()->ping() ? _("CONNECTED") : _("NOT CONNECTED"));
+		s->getMenu().getList()->onSizeChanged();
+	});
 
 	// Network Indicator
 	auto networkIndicator = std::make_shared<SwitchComponent>(mWindow);

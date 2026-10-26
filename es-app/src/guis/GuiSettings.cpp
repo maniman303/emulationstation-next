@@ -66,6 +66,13 @@ int GuiSettings::getTabIndex()
 	return mMenu.getTabIndex();
 }
 
+void GuiSettings::topWindow(bool isTop)
+{
+	GuiComponent::topWindow(isTop);
+	if (isTop && mOnResumeCallback)
+		mOnResumeCallback();
+}
+
 GuiSettings::~GuiSettings()
 {
 	

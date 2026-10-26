@@ -94,6 +94,8 @@ public:
     inline void setSave(bool sav) { mDoSave = sav; };
 
 	bool input(InputConfig* config, Input input) override;
+	void topWindow(bool isTop) override;
+	void setOnResumeCallback(const std::function<void()>& callback) { mOnResumeCallback = callback; }
 	std::vector<HelpPrompt> getHelpPrompts() override;
 	HelpStyle getHelpStyle() override;
 
@@ -137,6 +139,7 @@ private:
 
 	std::vector< std::function<void()> > mSaveFuncs;
 	std::function<void()> mOnFinalizeFunc;
+	std::function<void()> mOnResumeCallback;
 
 	std::map<std::string, bool> mVariableMap;
 
