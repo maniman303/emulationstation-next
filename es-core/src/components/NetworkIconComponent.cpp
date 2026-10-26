@@ -3,9 +3,11 @@
 #include "utils/Platform.h"
 #include "IExternalActivity.h"
 #include "watchers/NetworkStateWatcher.h"
+#include "resources/TextureResource.h"
 
-NetworkIconComponent::NetworkIconComponent(Window* window) : ImageComponent(window)
+NetworkIconComponent::NetworkIconComponent(Window* window) : ImageComponent(window, true, false)
 {
+	setAllowFading(false);
 	setVisible(false);
 
 	WatchersManager::getInstance()->RegisterNotify(this);
@@ -19,6 +21,16 @@ NetworkIconComponent::NetworkIconComponent(Window* window) : ImageComponent(wind
 NetworkIconComponent::~NetworkIconComponent()
 {
 	WatchersManager::getInstance()->UnregisterNotify(this);
+}
+
+void NetworkIconComponent::preloadTextures()
+{
+	const std::string paths[] = { mNetworkIcon, mPlanemodeIcon };
+	for (const auto& path : paths)
+	{
+		if (!path.empty() && ResourceManager::getInstance()->fileExists(path))
+			TextureResource::get(path, false, isLinear(), true, false);
+	}
 }
 
 void NetworkIconComponent::OnWatcherChanged(IWatcher* component)
@@ -68,4 +80,7 @@ void NetworkIconComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, c
 
 	if (elem->has("planemodeIcon") && ResourceManager::getInstance()->fileExists(elem->get<std::string>("planemodeIcon")))
 		mPlanemodeIcon = elem->get<std::string>("planemodeIcon");
+
+	preloadTextures();
+	updateNetworkStatus(false);
 }

@@ -26,6 +26,7 @@ public:
 private:
 	bool refreshStatus() override;
 	bool updateNetworkStatus(bool resolveImage);
+	void preloadTextures();
 	StatusComponents::LatestReading<NetworkStateWatcher::State> mNetworkInfo;
 	
 	std::string mNetworkIcon;

@@ -122,6 +122,7 @@ protected:
 	std::string mCurrentBatteryTexture;
 	
 	void updateBatteryInfo();
+	void preloadBatteryTextures();
 
 	std::string mIncharge;
 	std::string mFull;

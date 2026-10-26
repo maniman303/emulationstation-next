@@ -1,15 +1,20 @@
 #include "components/BatteryIconComponent.h"
 #include "Settings.h"
 #include "watchers/BatteryLevelWatcher.h"
+#include "resources/TextureResource.h"
 
-BatteryIconComponent::BatteryIconComponent(Window* window) : ImageComponent(window)
+BatteryIconComponent::BatteryIconComponent(Window* window) : ImageComponent(window, true, false)
 {	
+	setAllowFading(false);
+
 	mIncharge = ResourceManager::getInstance()->getResourcePath(":/battery/incharge.svg");
 	mFull = ResourceManager::getInstance()->getResourcePath(":/battery/full.svg");
 	mAt75 = ResourceManager::getInstance()->getResourcePath(":/battery/75.svg");
 	mAt50 = ResourceManager::getInstance()->getResourcePath(":/battery/50.svg");
 	mAt25 = ResourceManager::getInstance()->getResourcePath(":/battery/25.svg");
 	mEmpty = ResourceManager::getInstance()->getResourcePath(":/battery/empty.svg");
+
+	preloadTextures();
 
 	WatchersManager::getInstance()->RegisterNotify(this);
 
@@ -21,6 +26,16 @@ BatteryIconComponent::BatteryIconComponent(Window* window) : ImageComponent(wind
 BatteryIconComponent::~BatteryIconComponent()
 {
 	WatchersManager::getInstance()->UnregisterNotify(this);
+}
+
+void BatteryIconComponent::preloadTextures()
+{
+	const std::string paths[] = { mIncharge, mFull, mAt75, mAt50, mAt25, mEmpty };
+	for (const auto& path : paths)
+	{
+		if (!path.empty() && ResourceManager::getInstance()->fileExists(path))
+			TextureResource::get(path, false, isLinear(), true, false);
+	}
 }
 
 void BatteryIconComponent::OnWatcherChanged(IWatcher* component)
@@ -95,5 +110,8 @@ void BatteryIconComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, c
 
 	if (elem->has("empty") && ResourceManager::getInstance()->fileExists(elem->get<std::string>("empty")))
 		mEmpty = elem->get<std::string>("empty");
+
+	preloadTextures();
+	updateBatteryStatus(false);
 }
 

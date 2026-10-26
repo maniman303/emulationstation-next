@@ -27,6 +27,7 @@ public:
 private:
 	bool refreshStatus() override;
 	bool updateBatteryStatus(bool resolveImage);
+	void preloadTextures();
 	StatusComponents::LatestReading<Utils::Platform::BatteryInformation> mBatteryInfo;
 
 	std::string mIncharge;

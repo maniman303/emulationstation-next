@@ -444,6 +444,8 @@ void ControllerActivityComponent::applyTheme(const std::shared_ptr<ThemeData>& t
 
 		if (elem->has("empty") && ResourceManager::getInstance()->fileExists(elem->get<std::string>("empty")))
 			mEmpty = elem->get<std::string>("empty");
+
+		preloadBatteryTextures();
 	}
 
 	if (properties & COLOR)
@@ -500,7 +502,7 @@ void ControllerActivityComponent::updateBatteryInfo()
 		mBatteryText = nullptr;
 	}
 
-	if (mBatteryInfo.hasBattery != info.hasBattery || mBatteryInfo.isCharging != info.isCharging)
+	if (!info.hasBattery)
 	{
 		mBatteryImage = nullptr;
 		mCurrentBatteryTexture = "";
@@ -532,8 +534,18 @@ void ControllerActivityComponent::updateBatteryInfo()
 			if (mCurrentBatteryTexture.empty())
 				mBatteryImage = nullptr;
 			else
-				mBatteryImage = TextureResource::get(mCurrentBatteryTexture, false, true);
+				mBatteryImage = TextureResource::get(mCurrentBatteryTexture, false, true, true, false);
 		}
+	}
+}
+
+void ControllerActivityComponent::preloadBatteryTextures()
+{
+	const std::string paths[] = { mIncharge, mFull, mAt75, mAt50, mAt25, mEmpty };
+	for (const auto& path : paths)
+	{
+		if (!path.empty() && ResourceManager::getInstance()->fileExists(path))
+			TextureResource::get(path, false, true, true, false);
 	}
 }
 
